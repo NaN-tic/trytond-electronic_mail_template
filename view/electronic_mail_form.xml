@@ -7,18 +7,4 @@ The COPYRIGHT file at the top level of this repository contains the full copyrig
         position="after">
         <button name="send_mail" string="Send Email" icon="tryton-ok"/>
     </xpath>
-
-    <xpath expr="/form/field[@name='email']" position="replace">
-        <notebook colspan="4">
-            <page id="plain" string="Plain Text">
-                <field name="body_plain" colspan="4"/>
-            </page>
-            <page id="html" string="HTML">
-                <field name="body_html" colspan="4"/>
-            </page>
-            <page id="file" string="Email File">
-                <field name="email"/>
-            </page>
-        </notebook>
-    </xpath>
 </data>
