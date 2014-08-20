@@ -2,8 +2,7 @@
 <!-- This file is part electronic_mail_template module for Tryton.
 The COPYRIGHT file at the top level of this repository contains the full copyright notices and license terms. -->
 <data>
-    <xpath
-        expr="/form/group[@id=&quot;send_area&quot;]/field[@name=&quot;flag_send&quot;]"
+    <xpath expr="/form/group[@id='send_area']/field[@name='flag_received']"
         position="after">
         <button name="send_mail" string="Send Email" icon="tryton-ok"/>
     </xpath>

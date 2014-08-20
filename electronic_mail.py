@@ -4,7 +4,7 @@
 #the full copyright notices and license terms.
 from trytond.model import ModelView, ModelSQL, fields
 from trytond.pool import Pool
-from trytond.pyson import Eval
+from trytond.pyson import Eval, Bool
 
 __all__ = ['ElectronicMail']
 
@@ -20,7 +20,9 @@ class ElectronicMail(ModelSQL, ModelView):
         super(ElectronicMail, cls).__setup__()
         cls._buttons.update({
                 'send_mail': {
-                    'invisible': Eval('body_plain') == '',
+                    'invisible': ((Bool(Eval('body_plain') == '') &
+                            Bool(Eval('body_html') == '')) |
+                        Eval('flag_received')),
                     },
                 })
 
