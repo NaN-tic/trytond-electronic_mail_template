@@ -88,8 +88,9 @@ class Template(ModelSQL, ModelView):
             'model': Eval('model'),
             'email_template': True,
             })
-    signature =  fields.Boolean('Use Signature', help='The signature from the User details '
-        'will be appened to the mail.')
+    signature =  fields.Boolean('Use Signature',
+        help='The signature from the User details will be appened to the '
+        'mail.')
     message_id = fields.Char('Message-ID', help='Unique Message Identifier')
     in_reply_to = fields.Char('In Repply To')
 
@@ -209,7 +210,7 @@ class Template(ModelSQL, ModelView):
                 'sender': 'sender',
                 'to': 'to',
                 'cc': 'cc',
-                #~ 'bcc': 'bcc',
+                'bcc': 'bcc',
                 'subject': 'subject',
                 'message_id': 'message-id',
                 'in_reply_to': 'in-reply-to',
@@ -248,16 +249,15 @@ class Template(ModelSQL, ModelView):
             if template.signature:
                 User = Pool().get('res.user')
                 user = User(Transaction().user)
+                if user.signature_html:
+                    signature = user.signature_html.encode("utf8")
+                    html = '%s<br>--<br>%s' % (html, signature)
                 if user.signature:
-                    signature = user.signature
-                    plain = '%s\n--\n%s' % (
-                            plain,
-                            signature.encode("utf8"),
-                            )
-                    html = '%s<br>--<br>%s' % (
-                            html,
-                            signature.encode("utf8").replace('\n', '<br>'),
-                            )
+                    signature = user.signature.encode("utf-8")
+                    plain = '%s\n--\n%s' % (plain, signature)
+                    if not user.signature_html:
+                        html = '%s<br>--<br>%s' % (html,
+                            signature.replace('\n', '<br>'))
             body = MIMEMultipart('alternative')
             body.attach(MIMEText(plain, _charset='utf-8'))
             body.attach(MIMEText(html, 'html', _charset='utf-8'))
