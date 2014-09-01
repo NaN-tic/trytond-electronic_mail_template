@@ -46,16 +46,16 @@ def split_emails(emails):
     return emails.split(';')
 
 
-def recepients_from_fields(email_record):
+def recipients_from_fields(email_record):
     """
     Returns a list of email addresses who are the recipients of this email
 
     :param email_record: Browse record of the email
     """
-    recepients = []
+    recipients = []
     for field in ('to', 'cc', 'bcc'):
-        recepients.extend(split_emails(getattr(email_record, field)))
-    return recepients
+        recipients.extend(split_emails(getattr(email_record, field)))
+    return recipients
 
 __all__ = ['Template', 'TemplateReport']
 
@@ -74,9 +74,12 @@ class Template(ModelSQL, ModelView):
         domain=[('state', '=', 'done')], required=True)
     name = fields.Char('Name', required=True, translate=True)
     model = fields.Many2One('ir.model', 'Model', required=True)
-    mailbox = fields.Many2One('electronic.mail.mailbox', 'Mailbox', required=True)
-    draft_mailbox = fields.Many2One('electronic.mail.mailbox', 'Draft Mailbox', required=True)
-    language = fields.Char('Language', help='Expression to find the ISO langauge code')
+    mailbox = fields.Many2One('electronic.mail.mailbox', 'Mailbox',
+        required=True)
+    draft_mailbox = fields.Many2One('electronic.mail.mailbox', 'Draft Mailbox',
+        required=True)
+    language = fields.Char('Language', help=('Expression to find the ISO '
+        'langauge code'))
     plain = fields.Text('Plain Text Body', translate=True)
     html = fields.Text('HTML Body', translate=True)
     reports = fields.Many2Many('electronic.mail.template.ir.action.report',
@@ -88,7 +91,7 @@ class Template(ModelSQL, ModelView):
             'model': Eval('model'),
             'email_template': True,
             })
-    signature =  fields.Boolean('Use Signature',
+    signature = fields.Boolean('Use Signature',
         help='The signature from the User details will be appened to the '
         'mail.')
     message_id = fields.Char('Message-ID', help='Unique Message Identifier')
@@ -98,8 +101,10 @@ class Template(ModelSQL, ModelView):
     def __setup__(cls):
         super(Template, cls).__setup__()
         cls._error_messages.update({
-                'smtp_error': 'Wrong connection to SMTP server. Email have not sent',
-                'recipients_error': 'Not valid recipients emails. Check emails in To, Cc or Bcc',
+                'smtp_error': ('Wrong connection to SMTP server. Email have '
+                    'not sent'),
+                'recipients_error': ('Not valid recipients emails. Check '
+                    'emails in To, Cc or Bcc'),
                 'smtp_server_default': 'There are not default SMTP server',
                 })
 
@@ -149,18 +154,18 @@ class Template(ModelSQL, ModelView):
         return {'record': record}
 
     @classmethod
-    def _engine_python(self, expression, record):
+    def _engine_python(cls, expression, record):
         '''Evaluate the pythonic expression and return its value
         '''
         if expression is None:
             return u''
 
         assert record is not None, 'Record is undefined'
-        template_context = self.template_context(record)
+        template_context = cls.template_context(record)
         return safe_eval(expression, template_context)
 
     @classmethod
-    def _engine_genshi(self, expression, record):
+    def _engine_genshi(cls, expression, record):
         '''
         :param expression: Expression to evaluate
         :param record: Browse record
@@ -169,11 +174,11 @@ class Template(ModelSQL, ModelView):
             return u''
 
         template = TextTemplate(expression)
-        template_context = self.template_context(record)
+        template_context = cls.template_context(record)
         return template.generate(**template_context).render(encoding='UTF-8')
 
     @classmethod
-    def _engine_jinja2(self, expression, record):
+    def _engine_jinja2(cls, expression, record):
         '''
         :param expression: Expression to evaluate
         :param record: Browse record
@@ -182,11 +187,11 @@ class Template(ModelSQL, ModelView):
             return u''
 
         template = Jinja2Template(expression)
-        template_context = self.template_context(record)
+        template_context = cls.template_context(record)
         return template.render(template_context).encode('utf-8')
 
     @classmethod
-    def render(self, template, record):
+    def render(cls, template, record):
         '''Renders the template and returns as email object
         :param template: Browse Record of the template
         :param record: Browse Record of the record on which the template
@@ -202,7 +207,7 @@ class Template(ModelSQL, ModelView):
             language = template.eval(template.language, record)
 
         with Transaction().set_context(language=language):
-            template = self(template.id)
+            template = cls(template.id)
 
             # Simple rendering fields
             simple_fields = {
@@ -223,7 +228,7 @@ class Template(ModelSQL, ModelView):
 
             # Attach reports
             if template.reports:
-                reports = self.render_reports(template, record)
+                reports = cls.render_reports(template, record)
                 for report in reports:
                     ext, data, filename, file_name = report[0:5]
                     if file_name:
@@ -266,7 +271,7 @@ class Template(ModelSQL, ModelView):
         return message
 
     @classmethod
-    def render_reports(self, template, record):
+    def render_reports(cls, template, record):
         '''Renders the reports and returns as a list of tuple
 
         :param template: Browse Record of the template
@@ -288,31 +293,25 @@ class Template(ModelSQL, ModelView):
         return [(r[0][0], r[0][1], r[0][3], r[1]) for r in reports]
 
     @classmethod
-    def render_and_send(self, template_id, records):
+    def render_and_send(cls, template_id, records):
         """
         Render the template and send
         :param template_id: ID template
         :param records: List Object of the records
         """
-        template = self(template_id)
+        template = cls(template_id)
         ElectronicMail = Pool().get('electronic.mail')
         for record in records:
-            email_message = self.render(template, record)
-
-            context = {}
-            field_expression = getattr(template, 'bcc')
-            eval_result = template.eval(field_expression, record)
-            if eval_result:
-                context['bcc'] = eval_result
-
+            email_message = cls.render(template, record)
             electronic_email = ElectronicMail.create_from_email(
-                email_message, template.mailbox.id, context)
-            self.send_email(electronic_email, template)
-            self.add_event(template, record, electronic_email, email_message)  # add event
+                email_message, template.mailbox.id)
+            cls.send_email(electronic_email, template)
+            # add event
+            cls.add_event(template, record, electronic_email, email_message)
         return True
 
     @classmethod
-    def mail_from_trigger(self, records, trigger_id):
+    def mail_from_trigger(cls, records, trigger_id):
         """
         To be used with ir.trigger to send mails automatically
 
@@ -324,10 +323,10 @@ class Template(ModelSQL, ModelView):
         """
         Trigger = Pool().get('ir.trigger')
         trigger = Trigger(trigger_id)
-        return self.render_and_send(trigger.email_template.id, records)
+        return cls.render_and_send(trigger.email_template.id, records)
 
     @classmethod
-    def send_email(self, email_id, template=False):
+    def send_email(cls, email_id, template=False):
         """
         Send out the given email using the SMTP_CLIENT if configured in the
         Tryton Server configuration
@@ -339,7 +338,7 @@ class Template(ModelSQL, ModelView):
         SMTP = Pool().get('smtp.server')
 
         email = ElectronicMail(email_id)
-        recepients = recepients_from_fields(email)
+        recipients = recipients_from_fields(email)
 
         """SMTP Server from template or default"""
         if not template:
@@ -348,11 +347,11 @@ class Template(ModelSQL, ModelView):
                     ('default','=',True),
                     ])
             if not len(servers)>0:
-                self.raise_user_error('smtp_server_default')
+                cls.raise_user_error('smtp_server_default')
         server = template and template.smtp_server or servers[0]
 
         """Validate recipients to send or move email to draft mailbox"""
-        emails = ",".join(recepients)
+        emails = ",".join(recipients)
         if not ElectronicMail.validate_emails(emails.split(',')) and template:
             """Draft Mailbox. Not send email"""
             ElectronicMail.write([email], {
@@ -362,18 +361,18 @@ class Template(ModelSQL, ModelView):
 
         try:
             server = SMTP.get_smtp_server(server)
-            server.sendmail(email.from_, recepients,
+            server.sendmail(email.from_, recipients,
                 ElectronicMail._get_email(email))
             server.quit()
             ElectronicMail.write([email], {
                 'flag_send': True,
                 })
         except:
-            self.raise_user_error('smtp_error')
+            cls.raise_user_error('smtp_error')
         return True
 
     @classmethod
-    def add_event(self, template, record, electronic_email, email_message):
+    def add_event(cls, template, record, electronic_email, email_message):
         """
         Add event if party_event is installed
         :param template: Browse Record of the template
