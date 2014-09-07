@@ -13,8 +13,6 @@ class ElectronicMail(ModelSQL, ModelView):
     "E-Mail module extended to suit inbuilt reading and templating"
     __name__ = 'electronic.mail'
 
-    subject = fields.Char('Subject', translate=True)
-
     @classmethod
     def __setup__(cls):
         super(ElectronicMail, cls).__setup__()
@@ -22,7 +20,7 @@ class ElectronicMail(ModelSQL, ModelView):
                 'send_mail': {
                     'invisible': ((Bool(Eval('body_plain') == '') &
                             Bool(Eval('body_html') == '')) |
-                        Eval('flag_received')),
+                        ~Eval('flag_send')),
                     },
                 })
 
