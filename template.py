@@ -362,7 +362,7 @@ class Template(ModelSQL, ModelView):
         try:
             server = SMTP.get_smtp_server(server)
             server.sendmail(email.from_, recipients,
-                ElectronicMail._get_email(email))
+                ElectronicMail._get_mail(email))
             server.quit()
             ElectronicMail.write([email], {
                 'flag_send': True,
