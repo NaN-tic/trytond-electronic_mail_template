@@ -2,7 +2,7 @@
 #This file is part electronic_mail_template module for Tryton.
 #The COPYRIGHT file at the top level of this repository contains
 #the full copyright notices and license terms.
-from trytond.model import ModelView, ModelSQL, fields
+from trytond.model import ModelView, ModelSQL
 from trytond.pool import Pool
 from trytond.pyson import Eval, Bool
 
@@ -31,7 +31,7 @@ class ElectronicMail(ModelSQL, ModelView):
 
     @classmethod
     @ModelView.button
-    def send_mail(self, emails):
+    def send_mail(self, mails):
         Template = Pool().get('electronic.mail.template')
-        for email in emails:
-            Template.send_email(email)
+        for mail in mails:
+            Template.send_mail(mail)

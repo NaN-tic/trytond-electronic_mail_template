@@ -302,12 +302,12 @@ class Template(ModelSQL, ModelView):
         template = cls(template_id)
         ElectronicMail = Pool().get('electronic.mail')
         for record in records:
-            email_message = cls.render(template, record)
-            electronic_email = ElectronicMail.create_from_email(
-                email_message, template.mailbox.id)
-            cls.send_email(electronic_email, template)
+            mail_message = cls.render(template, record)
+            electronic_mail = ElectronicMail.create_from_mail(
+                mail_message, template.mailbox.id)
+            cls.send_mail(electronic_mail, template)
             # add event
-            cls.add_event(template, record, electronic_email, email_message)
+            cls.add_event(template, record, electronic_mail, mail_message)
         return True
 
     @classmethod
@@ -326,7 +326,7 @@ class Template(ModelSQL, ModelView):
         return cls.render_and_send(trigger.email_template.id, records)
 
     @classmethod
-    def send_email(cls, email_id, template=False):
+    def send_mail(cls, mail_id, template=False):
         """
         Send out the given email using the SMTP_CLIENT if configured in the
         Tryton Server configuration
@@ -337,8 +337,8 @@ class Template(ModelSQL, ModelView):
         ElectronicMail = Pool().get('electronic.mail')
         SMTP = Pool().get('smtp.server')
 
-        email = ElectronicMail(email_id)
-        recipients = recipients_from_fields(email)
+        mail = ElectronicMail(mail_id)
+        recipients = recipients_from_fields(mail)
 
         """SMTP Server from template or default"""
         if not template:
@@ -354,17 +354,17 @@ class Template(ModelSQL, ModelView):
         emails = ",".join(recipients)
         if not ElectronicMail.validate_emails(emails.split(',')) and template:
             """Draft Mailbox. Not send email"""
-            ElectronicMail.write([email], {
+            ElectronicMail.write([mail], {
                 'mailbox': template.draft_mailbox,
                 })
             return False
 
         try:
             server = SMTP.get_smtp_server(server)
-            server.sendmail(email.from_, recipients,
-                ElectronicMail._get_mail(email))
+            server.sendmail(mail.from_, recipients,
+                ElectronicMail._get_mail(mail))
             server.quit()
-            ElectronicMail.write([email], {
+            ElectronicMail.write([mail], {
                 'flag_send': True,
                 })
         except:

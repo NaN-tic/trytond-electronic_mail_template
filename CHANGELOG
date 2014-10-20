@@ -10,7 +10,7 @@ Version 2.4.0 - 2012-09-06
 * Add locale ca_ES
 * Add locale es_ES
 * Draft Mailbox. When recipients emails are not valid, add email in this mailbox
-* When send_email, ElectronicMail flag send field is True
+* When send_mail, ElectronicMail flag send field is True
 * Date when generate email use localtime (time server)
 * Template. Default template field is True
 * Add signature template email
