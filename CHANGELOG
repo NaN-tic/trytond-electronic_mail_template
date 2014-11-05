@@ -1,3 +1,11 @@
+Version 3.4.0 - 2014-11-05
+
+Version 3.2.0 - 2014-05-22
+
+Version 3.0.0 - 2013-10-25
+
+Version 2.8.0 - 2013-04-26
+
 Version 2.6.0 - 2012-10-08
 * Simplify module information with python configuration
 * Active Record
@@ -20,7 +28,7 @@ Version 2.4.0 - 2012-09-06
 * Attach file report. Default Tryton report file is base64
 * Subject field translate (ElectronicMail)
 * FIX Transaction language set_context
-* Plain and html fields translate 
+* Plain and html fields translate
 * Try/except smtp server connection error
 * Add name field in Template model (usuability)
 * Rename Model name. Replace _ to . (dot)
