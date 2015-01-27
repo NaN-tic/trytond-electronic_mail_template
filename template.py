@@ -211,14 +211,14 @@ class Template(ModelSQL, ModelView):
 
             # Simple rendering fields
             simple_fields = {
-                'from_': 'from',
-                'sender': 'sender',
-                'to': 'to',
-                'cc': 'cc',
-                'bcc': 'bcc',
-                'subject': 'subject',
-                'message_id': 'message-id',
-                'in_reply_to': 'in-reply-to',
+                'from_': 'From',
+                'sender': 'Sender',
+                'to': 'To',
+                'cc': 'Cc',
+                'bcc': 'Bcc',
+                'subject': 'Subject',
+                'message_id': 'Message-Id',
+                'in_reply_to': 'In-Reply-To',
                 }
             for field_name in simple_fields.keys():
                 field_expression = getattr(template, field_name)
