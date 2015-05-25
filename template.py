@@ -11,8 +11,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.utils import formatdate
-from email import Encoders
 from email.header import decode_header
+from email import Encoders, charset
 
 from genshi.template import TextTemplate
 from trytond.model import ModelView, ModelSQL, fields
@@ -279,6 +279,7 @@ class Template(ModelSQL, ModelView):
             body = None
             if html and plain:
                 body = MIMEMultipart('alternative')
+            charset.add_charset('utf-8', charset.QP, charset.QP)
             if plain:
                 if body:
             	    body.attach(MIMEText(plain, 'plain', _charset='utf-8'))
@@ -325,6 +326,7 @@ class Template(ModelSQL, ModelView):
         template = cls(template_id)
         ElectronicMail = Pool().get('electronic.mail')
         for record in records:
+            print "======= record:", record
             mail_message = cls.render(template, record)
             electronic_mail = ElectronicMail.create_from_mail(
                 mail_message, template.mailbox.id)
