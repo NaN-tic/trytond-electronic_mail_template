@@ -326,7 +326,6 @@ class Template(ModelSQL, ModelView):
         template = cls(template_id)
         ElectronicMail = Pool().get('electronic.mail')
         for record in records:
-            print "======= record:", record
             mail_message = cls.render(template, record)
             electronic_mail = ElectronicMail.create_from_mail(
                 mail_message, template.mailbox.id)
