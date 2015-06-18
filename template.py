@@ -102,7 +102,7 @@ class Template(ModelSQL, ModelView):
         super(Template, cls).__setup__()
         cls._error_messages.update({
                 'smtp_error': ('Wrong connection to SMTP server. Email have '
-                    'not sent'),
+                    'not sent.\n\nServer mail info:\n\n%s'),
                 'recipients_error': ('Not valid recipients emails. Check '
                     'emails in To, Cc or Bcc'),
                 'smtp_server_default': 'There are not default SMTP server',
@@ -391,8 +391,8 @@ class Template(ModelSQL, ModelView):
             ElectronicMail.write([mail], {
                 'flag_send': True,
                 })
-        except:
-            cls.raise_user_error('smtp_error')
+        except Exception, message:
+            cls.raise_user_error('smtp_error', message)
         return True
 
     @classmethod
