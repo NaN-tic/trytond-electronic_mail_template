@@ -4,17 +4,48 @@
 Plantillas de correo
 ====================
 
+Las plantillas de correo electrónico nos permiten crear una acción para enviar 
+un correo electrónico a partir de los registros de algún modelo. Además también 
+podemos asociarlas con un disparador para que el sistema envíe automáticamente 
+un correo electrónico cuando se dé el disparador. Por ejemplo, esto nos puede 
+ser útil para enviar un correo electrónico al cliente cuando se realice el 
+envío de uno de sus albaranes. 
+
 .. inheritref:: electronic_mail_template/electronic_mail:section:plantillas
 
 Plantillas
 ==========
 
-Debe diseñar las plantillas de correo electrónico. Para los tags se usan expresiones
-`Genshi <http://genshi.edgewall.org/wiki/Documentation/0.4.x/text-templates.html>`_
-(**recomenable**),
-`Jinja2 <http://jinja.pocoo.org/docs/>`_ (si se encuentra instalado) o Python.
-Consulte el apartado plantillas para ver ejemplos.
+En Tryton podemos crear plantillas de correo electrónico que permitan enviar 
+mensajes predefinidos de forma manual desde una pantalla en concreto (por 
+ejemplo, desde facturas o pedidos), así como automatizar totalmente el envío 
+(por ejemplo, mandar la factura por correo electrónico cuando se confirme el 
+documento de factura). Para los tags se usan expresiones Genshi_ 
+(**recomendable**), Jinja2_ (si se encuentra instalado) o Python. Consulte el 
+apartado plantillas para ver ejemplos. 
 
+.. figure:: images/plantilla.png
+
+.. _Genshi: http://genshi.edgewall.org/wiki/Documentation/0.4.x/text-templates.html
+
+.. _Jinja2: http://jinja.pocoo.org/docs/
+
+Como podemos observar hemos utilizado las expresiones $(record.nombre_campo) 
+para indicar que queremos reemplazar estas expresiones por los valores del 
+registro desde el que estamos creando el correo electrónico. 
+
+Además, como hemos marcado la opción *Crear acción*, en el menú de albaranes de 
+clientes tendremos disponible una nueva acción llamada *Envío albarán*, que 
+podremos utilizar para enviar esta plantilla al cliente.
+
+.. Si clicamos en esta opción se generará la siguiente pantalla:
+   Imagen pantalla enviar correo
+
+Podremos observar como nos modifica las expresiones con los valores del 
+registro seleccionado. En caso de querer personalizar el texto podemos 
+modificar los campos antes de realizar el envío.
+   
+   
 .. inheritref:: electronic_mail_template/electronic_mail:section:envio
 
 Envío
@@ -122,7 +153,7 @@ Por ejemplo en un pedido de venta podemos personalizar el informe con el nombre:
 
 .. code::
 
-    zikzakmedia_pedido_${record.reference or record.sale_date}
+    empresa_pedido_${record.reference or record.sale_date}
 
 .. important:: Si personalizamos el nombre del informe, este no debe contener la
               extensión del fichero. En el momento de enviar el correo, se
