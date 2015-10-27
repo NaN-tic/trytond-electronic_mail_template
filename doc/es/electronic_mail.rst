@@ -1,3 +1,25 @@
+#:inside:electronic_mail/electronic_mail:section:configuracion#
+
+Además de llevar a cabo el procedimiento anterior, debemos tener 
+configurado como mínimo un servidor SMTP para que se realicen los envíos 
+correctamente. Para configurar un servidor SMTP debemos ir a la opción 
+*Administración* > *SMTP* > *Servidores*.
+
+Allí deberemos introducir un nombre y los datos de conexión al servidor SMTP. 
+Por favor, contacte con su administrador del correo electrónico en caso de 
+desconocer los datos. 
+
+Una vez introducida esta información podemos verificar que la conexión se 
+realiza correctamente utilizando el botón *Test conexión*.
+
+Si marcamos el campo *Por defecto*, este servidor se utilizará para todos los 
+envíos en los que no se haya forzado ningún envío.
+
+Si queremos forzar que todos los correos desde la dirección de correo 
+introducida en el campo *Correo electrónico* debemos marcar la opción *Usar 
+email*.
+
+
 #:after:electronic_mail/electronic_mail:section:mailbox#
 
 ====================
