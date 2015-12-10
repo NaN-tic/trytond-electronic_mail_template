@@ -3,7 +3,7 @@
 The COPYRIGHT file at the top level of this repository contains the full copyright notices and license terms. -->
 <data>
     <xpath
-        expr="/form/notebook/page[@string=&quot;General&quot;]/field[@name=&quot;email&quot;]"
+        expr="/form/notebook/page[@string='General']/field[@name='email']"
         position="after">
         <newline/>
         <label name="file_name"/>
