@@ -143,7 +143,7 @@ class Template(ModelSQL, ModelView):
         :param record: The browse record of the record
         '''
         engine_method = getattr(self, '_engine_' + self.engine)
-        return engine_method(expression, record)
+        return engine_method(expression.decode('utf-8'), record)
 
     @staticmethod
     def template_context(record):
