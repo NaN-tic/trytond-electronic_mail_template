@@ -10,8 +10,8 @@ import logging
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
-from email.utils import formatdate
-from email.header import decode_header
+from email.utils import formatdate, make_msgid
+from email.header import decode_header, Header
 from email import Encoders, charset
 
 from genshi.template import TextTemplate
@@ -55,6 +55,7 @@ def recipients_from_fields(email_record):
     for field in ('to', 'cc', 'bcc'):
         recipients.extend(split_emails(getattr(email_record, field)))
     return recipients
+
 
 __all__ = ['Template', 'TemplateReport']
 
@@ -138,7 +139,7 @@ class Template(ModelSQL, ModelView):
         :param record: The browse record of the record
         '''
         engine_method = getattr(self, '_engine_' + self.engine)
-        return engine_method(expression.decode('utf-8'), record)
+        return engine_method(expression, record)
 
     @staticmethod
     def template_context(record):
@@ -186,107 +187,100 @@ class Template(ModelSQL, ModelView):
         return template.render(template_context).encode('utf-8')
 
     @classmethod
-    def render(cls, template, record):
+    def render(cls, template, record, values):
         '''Renders the template and returns as email object
         :param template: Browse Record of the template
         :param record: Browse Record of the record on which the template
             is to generate the data on
         :return: 'email.message.Message' instance
         '''
-
         message = MIMEMultipart()
-        message['date'] = formatdate(localtime=1)
+        messageid = template.eval(values['message_id'], record)
+        message['Message-Id'] = messageid or make_msgid()
+        message['Date'] = formatdate(localtime=1)
+        if values.get('in_reply_to'):
+            message['In-Reply-To'] = template.eval(values['in_reply_to'],
+                record)
 
-        language = Transaction().context.get('language', 'en_US')
-        if template.language:
-            language = template.eval(template.language, record)
+        message['From'] = template.eval(values['from_'], record)
+        if values.get('sender'):
+            message['Sender'] = template.eval(values['sender'], record)
+        message['To'] = template.eval(values['to'], record)
+        if values.get('cc'):
+            message['Cc'] = template.eval(values['cc'], record)
+        if values.get('bcc'):
+            message['Bcc'] = template.eval(values['bcc'], record)
 
-        with Transaction().set_context(language=language):
-            template = cls(template.id)
+        message['Subject'] = Header(template.eval(values['subject'],
+                record), 'utf-8')
 
-            # Simple rendering fields
-            simple_fields = {
-                'from_': 'from',
-                'sender': 'sender',
-                'to': 'to',
-                'cc': 'cc',
-                'bcc': 'bcc',
-                'subject': 'subject',
-                'message_id': 'message-id',
-                'in_reply_to': 'in-reply-to',
-                }
-            for field_name in simple_fields.keys():
-                field_expression = getattr(template, field_name)
-                eval_result = template.eval(field_expression, record)
-                if eval_result:
-                    message[simple_fields[field_name]] = eval_result
-
-            # Attach reports
-            if template.reports:
-                reports = cls.render_reports(template, record)
-                for report in reports:
-                    ext, data, filename, file_name = report[0:5]
-                    if file_name:
-                        filename = template.eval(file_name, record)
-                    filename = ext and '%s.%s' % (filename, ext) or filename
-                    content_type, _ = mimetypes.guess_type(filename)
-                    maintype, subtype = (
-                        content_type or 'application/octet-stream'
-                        ).split('/', 1)
-
-                    attachment = MIMEBase(maintype, subtype)
-                    attachment.set_payload(data)
-                    Encoders.encode_base64(attachment)
-                    attachment.add_header(
-                        'Content-Disposition', 'attachment', filename=filename)
-                    attachment.add_header(
-                        'Content-Transfer-Encoding', 'base64')
-                    message.attach(attachment)
-
-            # HTML & Text Alternate parts
-            plain = template.eval(template.plain, record)
-            html = template.eval(template.html, record)
-            header = """
-                <html>
-                <head><head>
-                <body>
-                """
-            footer = """
-                </body>
-                </html>
-                """
-            if html:
-                html = "%s%s" % (header, html)
-            if template.signature:
-                User = Pool().get('res.user')
-                user = User(Transaction().user)
-                if html and user.signature_html:
-                    signature = user.signature_html.encode('utf8')
-                    html = '%s<br>--<br>%s' % (html, signature)
-                if plain and user.signature:
-                    signature = user.signature.encode('utf-8')
-                    plain = '%s\n--\n%s' % (plain, signature)
-                    if html and not user.signature_html:
-                        html = '%s<br>--<br>%s' % (html.encode('utf-8'),
-                            signature.replace('\n', '<br>'))
-            if html:
-            	html = "%s%s" % (html, footer)
-            body = None
-            if html and plain:
-                body = MIMEMultipart('alternative')
-            charset.add_charset('utf-8', charset.QP, charset.QP)
-            if plain:
-                if body:
-            	    body.attach(MIMEText(plain, 'plain', _charset='utf-8'))
-                else:
-            	    message.attach(MIMEText(plain, 'plain', _charset='utf-8'))
-            if html:
-                if body:
-            	    body.attach(MIMEText(html, 'html', _charset='utf-8'))
-                else:
-            	    message.attach(MIMEText(html, 'html', _charset='utf-8'))
+        # HTML & Text Alternate parts
+        plain = template.eval(values['plain'], record)
+        html = template.eval(values['html'], record)
+        header = """
+            <html>
+            <head><head>
+            <body>
+            """
+        footer = """
+            </body>
+            </html>
+            """
+        if html:
+            html = "%s%s" % (header, html)
+        if template.signature:
+            User = Pool().get('res.user')
+            user = User(Transaction().user)
+            if html and user.signature_html:
+                signature = user.signature_html.encode('utf8')
+                html = '%s<br>--<br>%s' % (html, signature)
+            if plain and user.signature:
+                signature = user.signature.encode('utf-8')
+                plain = '%s\n--\n%s' % (plain, signature)
+                if html and not user.signature_html:
+                    html = '%s<br>--<br>%s' % (html.encode('utf-8'),
+                        signature.replace('\n', '<br>'))
+        if html:
+        	html = "%s%s" % (html, footer)
+        body = None
+        if html and plain:
+            body = MIMEMultipart('alternative')
+        charset.add_charset('utf-8', charset.QP, charset.QP)
+        if plain:
             if body:
-                message.attach(body)
+        	    body.attach(MIMEText(plain, 'plain', _charset='utf-8'))
+            else:
+        	    message.attach(MIMEText(plain, 'plain', _charset='utf-8'))
+        if html:
+            if body:
+        	    body.attach(MIMEText(html, 'html', _charset='utf-8'))
+            else:
+        	    message.attach(MIMEText(html, 'html', _charset='utf-8'))
+        if body:
+            message.attach(body)
+
+        # Attach reports
+        if template.reports:
+            reports = cls.render_reports(template, record)
+            for report in reports:
+                ext, data, filename, file_name = report[0:5]
+                if file_name:
+                    filename = template.eval(file_name, record)
+                filename = ext and '%s.%s' % (filename, ext) or filename
+                content_type, _ = mimetypes.guess_type(filename)
+                maintype, subtype = (
+                    content_type or 'application/octet-stream'
+                    ).split('/', 1)
+
+                attachment = MIMEBase(maintype, subtype)
+                attachment.set_payload(data)
+                Encoders.encode_base64(attachment)
+                attachment.add_header(
+                    'Content-Disposition', 'attachment', filename=filename)
+                attachment.add_header(
+                    'Content-Transfer-Encoding', 'base64')
+                message.attach(attachment)
+
         return message
 
     @classmethod
@@ -318,10 +312,25 @@ class Template(ModelSQL, ModelView):
         :param template_id: ID template
         :param records: List Object of the records
         """
+        pool = Pool()
+        ElectronicMail = pool.get('electronic.mail')
+        Template = pool.get('electronic.mail.template')
+
         template = cls(template_id)
-        ElectronicMail = Pool().get('electronic.mail')
+
         for record in records:
-            mail_message = cls.render(template, record)
+            #load data in language when send a record
+            if template.language:
+                language = template.eval(template.language, record)
+                with Transaction().set_context(language=language):
+                    template = Template(template.id)
+
+            values = {}
+            tmpl_fields = ('from_', 'sender', 'to', 'cc', 'bcc', 'subject',
+                'message_id', 'in_reply_to', 'plain', 'html')
+            for field_name in tmpl_fields:
+                values[field_name] = getattr(template, field_name)
+            mail_message = cls.render(template, record, values)
             electronic_mail = ElectronicMail.create_from_mail(
                 mail_message, template.mailbox.id)
             cls.send_mail(electronic_mail, template)
