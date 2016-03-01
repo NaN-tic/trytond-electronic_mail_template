@@ -199,6 +199,7 @@ class Template(ModelSQL, ModelView):
             is to generate the data on
         :return: 'email.message.Message' instance
         '''
+        ElectronicMail = Pool().get('electronic.mail')
         message = MIMEMultipart()
         messageid = template.eval(values['message_id'], record)
         message['Message-Id'] = messageid or make_msgid()
@@ -206,15 +207,19 @@ class Template(ModelSQL, ModelView):
         if values.get('in_reply_to'):
             message['In-Reply-To'] = template.eval(values['in_reply_to'],
                 record)
-
-        message['From'] = template.eval(values['from_'], record)
+        message['From'] = ElectronicMail.validate_emails(
+            template.eval(values['from_'], record))
         if values.get('sender'):
-            message['Sender'] = template.eval(values['sender'], record)
-        message['To'] = template.eval(values['to'], record)
+            message['Sender'] = ElectronicMail.validate_emails(
+                template.eval(values['sender'], record))
+        message['To'] = ElectronicMail.validate_emails(
+            template.eval(values['to'], record))
         if values.get('cc'):
-            message['Cc'] = template.eval(values['cc'], record)
+            message['Cc'] = ElectronicMail.validate_emails(
+                template.eval(values['cc'], record))
         if values.get('bcc'):
-            message['Bcc'] = template.eval(values['bcc'], record)
+            message['Bcc'] = ElectronicMail.validate_emails(
+                template.eval(values['bcc'], record))
 
         message['Subject'] = Header(template.eval(values['subject'],
                 record), 'utf-8')
