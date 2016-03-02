@@ -389,8 +389,7 @@ class Template(ModelSQL, ModelView):
         server = template and template.smtp_server or servers[0]
 
         """Validate recipients to send or move email to draft mailbox"""
-        emails = ",".join(recipients)
-        if not ElectronicMail.validate_emails(emails.split(',')) and template:
+        if not ElectronicMail.validate_emails(recipients) and template:
             """Draft Mailbox. Not send email"""
             ElectronicMail.write([mail], {
                 'mailbox': template.draft_mailbox,
