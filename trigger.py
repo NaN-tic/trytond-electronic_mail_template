@@ -8,12 +8,11 @@ from trytond.transaction import Transaction
 from trytond.pool import Pool, PoolMeta
 
 __all__ = ['Trigger']
-__metaclass__ = PoolMeta
 
 class Trigger:
     "Extend triggers to use Email template"
     __name__ = 'ir.trigger'
-
+    __metaclass__ = PoolMeta
     email_template = fields.Many2One(
         'electronic.mail.template', 'Template', 
         )
