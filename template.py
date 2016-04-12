@@ -412,7 +412,7 @@ class Template(ModelSQL, ModelView):
         :param electronic_email: Browse record email to send
         :param email_message: Data email to extract values
         """
-        cursor = Transaction().cursor
+        cursor = Transaction().connection.cursor()
         cursor.execute(
             "SELECT state "
             "from ir_module_module "
