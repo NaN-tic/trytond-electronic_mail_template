@@ -1,24 +1,18 @@
-# -*- coding: UTF-8 -*-
-#This file is part electronic_mail_template module for Tryton.
-#The COPYRIGHT file at the top level of this repository contains
-#the full copyright notices and license terms.
+# This file is part electronic_mail_template module for Tryton.
+# The COPYRIGHT file at the top level of this repository contains
+# the full copyright notices and license terms.
 "Email Template"
 from __future__ import with_statement
 
-import mimetypes
 import logging
+import mimetypes
+from email import Encoders, charset
+from email.header import decode_header, Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.utils import formatdate, make_msgid
-from email.header import decode_header, Header
-from email import Encoders, charset
-
 from genshi.template import TextTemplate
-from trytond.model import ModelView, ModelSQL, fields
-from trytond.transaction import Transaction
-from trytond.pyson import Eval
-from trytond.pool import Pool
 try:
     from jinja2 import Template as Jinja2Template
     jinja2_loaded = True
@@ -26,6 +20,11 @@ except ImportError:
     jinja2_loaded = False
     logging.getLogger('electronic_mail_template').error(
         'Unable to import jinja2. Install jinja2 package.')
+
+from trytond.model import ModelView, ModelSQL, fields
+from trytond.pyson import Eval
+from trytond.pool import Pool
+from trytond.transaction import Transaction
 
 
 def split_emails(emails):
@@ -85,8 +84,7 @@ class Template(ModelSQL, ModelView):
     reports = fields.Many2Many('electronic.mail.template.ir.action.report',
         'template', 'report', 'Reports')
     engine = fields.Selection('get_engines', 'Engine', required=True)
-    triggers = fields.One2Many(
-        'ir.trigger', 'email_template', 'Triggers',
+    triggers = fields.One2Many('ir.trigger', 'email_template', 'Triggers',
         context={
             'model': Eval('model'),
             'email_template': True,
@@ -246,21 +244,21 @@ class Template(ModelSQL, ModelView):
                     html = '%s<br>--<br>%s' % (html.encode('utf-8'),
                         signature.replace('\n', '<br>'))
         if html:
-        	html = "%s%s" % (html, footer)
+            html = "%s%s" % (html, footer)
         body = None
         if html and plain:
             body = MIMEMultipart('alternative')
         charset.add_charset('utf-8', charset.QP, charset.QP)
         if plain:
             if body:
-        	    body.attach(MIMEText(plain, 'plain', _charset='utf-8'))
+                body.attach(MIMEText(plain, 'plain', _charset='utf-8'))
             else:
-        	    message.attach(MIMEText(plain, 'plain', _charset='utf-8'))
+                message.attach(MIMEText(plain, 'plain', _charset='utf-8'))
         if html:
             if body:
-        	    body.attach(MIMEText(html, 'html', _charset='utf-8'))
+                body.attach(MIMEText(html, 'html', _charset='utf-8'))
             else:
-        	    message.attach(MIMEText(html, 'html', _charset='utf-8'))
+                message.attach(MIMEText(html, 'html', _charset='utf-8'))
         if body:
             message.attach(body)
 
@@ -324,7 +322,7 @@ class Template(ModelSQL, ModelView):
         template = cls(template_id)
 
         for record in records:
-            #load data in language when send a record
+            # load data in language when send a record
             if template.language:
                 language = template.eval(template.language, record)
                 with Transaction().set_context(language=language):
@@ -376,10 +374,10 @@ class Template(ModelSQL, ModelView):
         """SMTP Server from template or default"""
         if not template:
             servers = SMTP.search([
-                    ('state','=','done'),
-                    ('default','=',True),
+                    ('state', '=', 'done'),
+                    ('default', '=', True),
                     ])
-            if not len(servers)>0:
+            if not len(servers) > 0:
                 cls.raise_user_error('smtp_server_default')
         server = template and template.smtp_server or servers[0]
 
