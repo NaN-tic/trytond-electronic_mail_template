@@ -1,4 +1,4 @@
-# 
+#
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
@@ -13,13 +13,13 @@ msgid "There are not default SMTP server"
 msgstr "No hi ha cap servidor SMTP per defecte."
 
 msgctxt "error:electronic.mail.template:"
-msgid "Wrong connection to SMTP server. Email have not sent"
-msgstr "Ha fallat la connexió servidor SMTP. No s'ha enviat el correu."
-
-msgctxt "error:electronic.mail:"
-msgid "Invalid email. Please, check the email before save it."
-msgstr ""
-"Correu electrònic no es correcte. Revisa els destinataris abans d'enviar."
+msgid ""
+"Wrong connection to SMTP server. Email have not sent.\n"
+"\n"
+"Server mail info:\n"
+"\n"
+"%s"
+msgstr "Connexió al servidor SMTP incorrecta. El correu no s'ha enviat."
 
 msgctxt "field:electronic.mail,body_html:"
 msgid "HTML (BODY)"
@@ -229,18 +229,6 @@ msgstr "General"
 msgctxt "view:electronic.mail.template:"
 msgid "Reports"
 msgstr "Informes"
-
-msgctxt "view:electronic.mail:"
-msgid "Email File"
-msgstr "Fitxer Email"
-
-msgctxt "view:electronic.mail:"
-msgid "HTML"
-msgstr "HTML"
-
-msgctxt "view:electronic.mail:"
-msgid "Plain Text"
-msgstr "Text pla"
 
 msgctxt "view:electronic.mail:"
 msgid "Send Email"
