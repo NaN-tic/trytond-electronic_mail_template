@@ -411,7 +411,7 @@ class Template(ModelSQL, ModelView):
         cursor = Transaction().connection.cursor()
         cursor.execute(
             "SELECT state "
-            "from ir_module_module "
+            "from ir_module "
             "where state='installed' and name = 'party_event'")
         party_event = cursor.fetchall()
         if party_event and template.party:
