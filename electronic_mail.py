@@ -1,16 +1,15 @@
-# -*- coding: UTF-8 -*-
-#This file is part electronic_mail_template module for Tryton.
-#The COPYRIGHT file at the top level of this repository contains
-#the full copyright notices and license terms.
-from trytond.model import ModelView, ModelSQL
-from trytond.pool import Pool
+# This file is part electronic_mail_template module for Tryton.
+# The COPYRIGHT file at the top level of this repository contains
+# the full copyright notices and license terms.
+from trytond.model import ModelView
+from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval, Bool
 
 __all__ = ['ElectronicMail']
+__metaclass__ = PoolMeta
 
 
-class ElectronicMail(ModelSQL, ModelView):
-    "E-Mail module extended to suit inbuilt reading and templating"
+class ElectronicMail:
     __name__ = 'electronic.mail'
 
     @classmethod
