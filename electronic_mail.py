@@ -1,6 +1,6 @@
-# This file is part electronic_mail_template module for Tryton.
-# The COPYRIGHT file at the top level of this repository contains
-# the full copyright notices and license terms.
+#This file is part electronic_mail_template module for Tryton.
+#The COPYRIGHT file at the top level of this repository contains
+#the full copyright notices and license terms.
 from trytond.model import ModelView
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval, Bool
@@ -9,18 +9,17 @@ __all__ = ['ElectronicMail']
 
 
 class ElectronicMail:
-    "E-Mail module extended to suit inbuilt reading and templating"
-    __name__ = 'electronic.mail'
     __metaclass__ = PoolMeta
+    __name__ = 'electronic.mail'
 
     @classmethod
     def __setup__(cls):
         super(ElectronicMail, cls).__setup__()
         cls._buttons.update({
                 'send_mail': {
-                    'invisible': ((Bool(Eval('body_plain') == '')
-                            & Bool(Eval('body_html') == ''))
-                        | ~Eval('flag_send')),
+                    'invisible': ((Bool(Eval('body_plain') == '') &
+                            Bool(Eval('body_html') == '')) |
+                        ~Eval('flag_send')),
                     },
                 })
 
