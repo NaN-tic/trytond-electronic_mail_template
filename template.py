@@ -145,7 +145,14 @@ class Template(ModelSQL, ModelView):
 
         This is mainly to assist in the inheritance pattern
         """
-        return {'record': record}
+        User = Pool().get('res.user')
+        user = None
+        if Transaction().user:
+            user = User(Transaction().user)
+        return {
+            'record': record,
+            'user': user,
+            }
 
     @classmethod
     def _engine_python(cls, expression, record):
