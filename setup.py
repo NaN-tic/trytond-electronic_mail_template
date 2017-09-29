@@ -10,7 +10,10 @@ import ConfigParser
 
 MODULE = 'electronic_mail_template'
 PREFIX = 'trytonzz'
-MODULE2PREFIX = {}
+MODULE2PREFIX = {
+    'electronic_mail': 'trytonspain',
+    'smtp': 'trytonzz',
+}
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
