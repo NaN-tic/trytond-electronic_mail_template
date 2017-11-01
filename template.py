@@ -25,6 +25,7 @@ from trytond.model import ModelView, ModelSQL, fields
 from trytond.pyson import Eval
 from trytond.pool import Pool
 from trytond.transaction import Transaction
+from trytond import backend
 
 
 def split_emails(emails):
@@ -70,7 +71,7 @@ class Template(ModelSQL, ModelView):
     bcc = fields.Char('BCC')
     subject = fields.Char('Subject', translate=True)
     smtp_server = fields.Many2One('smtp.server', 'SMTP Server',
-        domain=[('state', '=', 'done')], required=True)
+        domain=[('state', '=', 'done')])
     name = fields.Char('Name', required=True, translate=True)
     model = fields.Many2One('ir.model', 'Model', required=True)
     mailbox = fields.Many2One('electronic.mail.mailbox', 'Mailbox',
@@ -105,6 +106,16 @@ class Template(ModelSQL, ModelView):
                     'emails in To, Cc or Bcc'),
                 'smtp_server_default': 'There are not default SMTP server',
                 })
+
+    @classmethod
+    def __register__(cls, module_name):
+        TableHandler = backend.get('TableHandler')
+        table = TableHandler(cls, module_name)
+
+        super(Template, cls).__register__(module_name)
+
+        # Drop required on smtp_server
+        table.not_null_action('smtp_server', action='remove')
 
     @staticmethod
     def default_engine():
@@ -370,21 +381,30 @@ class Template(ModelSQL, ModelView):
         :param email_id: ID of the email to be sent
         :param template: Browse Record of the template
         """
-        ElectronicMail = Pool().get('electronic.mail')
-        SMTP = Pool().get('smtp.server')
+        pool = Pool()
+        ElectronicMail = pool.get('electronic.mail')
+        SMTP = pool.get('smtp.server')
+        User = pool.get('res.user')
 
         mail = ElectronicMail(mail_id)
         recipients = recipients_from_fields(mail)
 
         """SMTP Server from template or default"""
-        if not template:
+        server = None
+        if template:
+            server = template.smtp_server
+        if not server:
+            user = Transaction().user
+            if user:
+                server = User(user).smtp_server
+        if not server:
             servers = SMTP.search([
                     ('state', '=', 'done'),
                     ('default', '=', True),
-                    ])
-            if not len(servers) > 0:
+                    ], limit=1)
+            if not servers:
                 cls.raise_user_error('smtp_server_default')
-        server = template and template.smtp_server or servers[0]
+            server, = servers
 
         """Validate recipients to send or move email to draft mailbox"""
         if not ElectronicMail.validate_emails(recipients) and template:

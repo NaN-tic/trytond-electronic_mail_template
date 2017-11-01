@@ -177,6 +177,10 @@ msgctxt "field:ir.trigger,email_template:"
 msgid "Template"
 msgstr "Plantilla"
 
+msgctxt "field:res.user,smtp_server:"
+msgid "SMTP Server"
+msgstr "Servidor SMTP"
+
 msgctxt "help:electronic.mail.template,language:"
 msgid "Expression to find the ISO langauge code"
 msgstr "Expressió per cercar el codi ISO del idioma"

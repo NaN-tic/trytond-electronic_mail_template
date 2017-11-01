@@ -6,6 +6,7 @@ from .template import *
 from .electronic_mail import *
 from .trigger import *
 from .report import *
+from .user import *
 
 
 def register():
@@ -15,4 +16,5 @@ def register():
         Template,
         TemplateReport,
         Trigger,
+        User,
         module='electronic_mail_template', type_='model')
