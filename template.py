@@ -6,7 +6,7 @@ from __future__ import with_statement
 
 import logging
 import mimetypes
-from email import Encoders, charset
+from email import encoders, charset
 from email.header import decode_header, Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -284,7 +284,7 @@ class Template(ModelSQL, ModelView):
 
                 attachment = MIMEBase(maintype, subtype)
                 attachment.set_payload(data)
-                Encoders.encode_base64(attachment)
+                encoders.encode_base64(attachment)
                 attachment.add_header(
                     'Content-Disposition', 'attachment', filename=filename)
                 message.attach(attachment)
@@ -415,21 +415,19 @@ class Template(ModelSQL, ModelView):
         :param electronic_email: Browse record email to send
         :param email_message: Data email to extract values
         """
-        cursor = Transaction().connection.cursor()
-        cursor.execute(
-            "SELECT state "
-            "from ir_module "
-            "where state='installed' and name = 'party_event'")
-        party_event = cursor.fetchall()
-        if party_event and template.party:
+        pool = Pool()
+        try:
+            Event = pool.get('party.event')
+        except KeyError:
+            return
+        if template.party:
             party = template.eval(template.party, record)
             resource = 'electronic.mail,%s' % electronic_email.id
             values = {
                 'subject': decode_header(email_message.get('subject'))[0][0],
                 'description': electronic_email.body_plain,
                 }
-            Pool().get('party.event').create_event(party, resource, values)
-        return True
+            Event.create_event(party, resource, values)
 
 
 class TemplateReport(ModelSQL):

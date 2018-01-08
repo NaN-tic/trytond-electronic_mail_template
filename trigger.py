@@ -1,5 +1,5 @@
 # This file is part electronic_mail_template module for Tryton.
-# The COPYRIGHT file at the top level of this repository contains 
+# The COPYRIGHT file at the top level of this repository contains
 # the full copyright notices and license terms.
 "Trigger Extension"
 from trytond.model import fields
@@ -8,18 +8,15 @@ from trytond.pool import Pool, PoolMeta
 
 __all__ = ['Trigger']
 
+
 class Trigger:
     __metaclass__ = PoolMeta
     __name__ = 'ir.trigger'
 
-    email_template = fields.Many2One(
-        'electronic.mail.template', 'Template', 
-        )
+    email_template = fields.Many2One('electronic.mail.template', "Template")
 
     @staticmethod
     def default_model():
-        Model = Pool().get('ir.model')
-
         model = Transaction().context.get('model', None)
         if model:
             return model
