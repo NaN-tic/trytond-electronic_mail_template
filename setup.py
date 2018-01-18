@@ -59,12 +59,12 @@ if minor_version % 2:
 else:
     branch = series
 dependency_links = [
-    ('hg+ssh://hg@bitbucket.org/nantic/trytond-electronic_mail@%(branch)s'
+    ('hg+https://hg@bitbucket.org/nantic/trytond-electronic_mail@%(branch)s'
         '#egg=trytonzz-electronic_mail-%(series)s' % {
             'branch': branch,
             'series': series,
             }),
-    ('hg+ssh://hg@bitbucket.org/trytonspain/trytond-smtp@%(branch)s'
+    ('hg+https://hg@bitbucket.org/trytonspain/trytond-smtp@%(branch)s'
         '#egg=trytonspain-smtp-%(series)s' % {
             'branch': branch,
             'series': series,
