@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- This file is part electronic_mail module for Tryton.
+The COPYRIGHT file at the top level of this repository contains the full copyright notices and license terms. -->
+<tryton>
+    <data>
+        <record model="ir.model.button" id="electronic_mail_send_mail_button">
+          <field name="name">send_mail</field>
+          <field name="string">Send Email</field>
+         <field name="model"
+              search="[('model', '=', 'electronic.mail')]"/>
+    </record>
+    </data>
+</tryton>
