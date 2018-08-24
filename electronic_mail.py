@@ -8,8 +8,7 @@ from trytond.pyson import Eval, Bool
 __all__ = ['ElectronicMail']
 
 
-class ElectronicMail:
-    __metaclass__ = PoolMeta
+class ElectronicMail(metaclass=PoolMeta):
     __name__ = 'electronic.mail'
 
     @classmethod

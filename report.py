@@ -7,10 +7,9 @@ from trytond.pool import PoolMeta
 __all__ = ['ActionReport']
 
 
-class ActionReport:
+class ActionReport(metaclass=PoolMeta):
     "Action report"
     __name__ = 'ir.action.report'
-    __metaclass__ = PoolMeta
     file_name = fields.Char('File Name Pattern', translate=True,
         help='File name e-mail attachment without extension. '
         'eg. sale_${record.reference}')

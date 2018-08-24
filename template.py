@@ -2,7 +2,7 @@
 # The COPYRIGHT file at the top level of this repository contains
 # the full copyright notices and license terms.
 "Email Template"
-from __future__ import with_statement
+
 
 import logging
 import mimetypes
@@ -157,7 +157,7 @@ class Template(ModelSQL, ModelView):
         '''Evaluate the pythonic expression and return its value
         '''
         if expression is None:
-            return u''
+            return ''
 
         assert record is not None, 'Record is undefined'
         template_context = cls.template_context(record)
@@ -170,7 +170,7 @@ class Template(ModelSQL, ModelView):
         :param record: Browse record
         '''
         if not expression:
-            return u''
+            return ''
 
         template = TextTemplate(expression)
         template_context = cls.template_context(record)
@@ -183,7 +183,7 @@ class Template(ModelSQL, ModelView):
         :param record: Browse record
         '''
         if not jinja2_loaded or not expression:
-            return u''
+            return ''
 
         template = Jinja2Template(expression)
         template_context = cls.template_context(record)

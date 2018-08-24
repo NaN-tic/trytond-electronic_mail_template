@@ -9,8 +9,7 @@ from trytond.pool import Pool, PoolMeta
 __all__ = ['Trigger']
 
 
-class Trigger:
-    __metaclass__ = PoolMeta
+class Trigger(metaclass=PoolMeta):
     __name__ = 'ir.trigger'
 
     email_template = fields.Many2One('electronic.mail.template', "Template")
