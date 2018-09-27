@@ -313,8 +313,19 @@ class Template(ModelSQL, ModelView):
             the report name
             the report file name (optional)
         '''
+        pool = Pool()
+        ActionReport = pool.get('ir.action.report')
+
+        if template.language:
+            language = template.eval(template.language, record)
+        else:
+            language = False
+
         reports = []
         for report_action in template.reports:
+            if language:
+                with Transaction().set_context(language=language):
+                    report_action = ActionReport(report_action.id)
             report = Pool().get(report_action.report_name, type='report')
             reports.append([report.execute([record.id], {'id': record.id}),
                 report_action.file_name])
