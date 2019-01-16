@@ -25,7 +25,8 @@ from trytond.model import ModelView, ModelSQL, fields
 from trytond.pyson import Eval
 from trytond.pool import Pool
 from trytond.transaction import Transaction
-
+from trytond.i18n import gettext
+from trytond.exceptions import UserError
 
 def split_emails(emails):
     """Email IDs could be separated by ';' or ','
@@ -94,15 +95,6 @@ class Template(ModelSQL, ModelView):
         'mail.')
     message_id = fields.Char('Message-ID', help='Unique Message Identifier')
     in_reply_to = fields.Char('In Repply To')
-
-    @classmethod
-    def __setup__(cls):
-        super(Template, cls).__setup__()
-        cls._error_messages.update({
-                'recipients_error': ('Not valid recipients emails. Check '
-                    'emails in To, Cc or Bcc'),
-                'smtp_server_default': 'There are not default SMTP server',
-                })
 
     @staticmethod
     def default_engine():
@@ -392,7 +384,8 @@ class Template(ModelSQL, ModelView):
                     ('default', '=', True),
                     ])
             if not len(servers) > 0:
-                cls.raise_user_error('smtp_server_default')
+                raise UserError(gettext(
+                    'electronic_mail_template.smtp_server_default'))
         server = template and template.smtp_server or servers[0]
 
         """Validate recipients to send or move email to draft mailbox"""
