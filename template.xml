@@ -36,6 +36,7 @@ The COPYRIGHT file at the top level of this repository contains the full copyrig
       <field name="act_window" ref="act_template_form"/>
     </record>
     <record model="ir.rule.group" id="rule_group_read_template">
+      <field name="name">Read Email Template</field>
       <field name="model" search="[('model', '=', 'electronic.mail.template')]"/>
       <field name="global_p" eval="True"/>
       <field name="default_p" eval="False"/>
@@ -44,7 +45,7 @@ The COPYRIGHT file at the top level of this repository contains the full copyrig
       <field name="perm_create" eval="False"/>
       <field name="perm_delete" eval="False"/>
     </record>
-    <menuitem action="act_template_form" 
+    <menuitem action="act_template_form"
       parent="electronic_mail.menu_email_management"
       id="menu_email_template" sequence="90"/>
     <record model="ir.ui.menu-res.group"
