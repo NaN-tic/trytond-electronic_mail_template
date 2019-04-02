@@ -191,8 +191,11 @@ msgstr "La firma del usuari serà afegit al correu"
 
 msgctxt "help:ir.action.report,file_name:"
 msgid ""
-"File name e-mail attachment without extension. eg. sale_${record.reference}"
-msgstr "Nom del fitxer sense la extensió, ex. venda_${record.reference}"
+"Attached file of electronic mail without extension according to the engine "
+"that will be used in the template. eg. sale_${record.reference}"
+msgstr ""
+"Nom del fitxer sense la extensió, d'acord amb el motor utilitzat a la "
+"plantilla,ex. venda_${record.reference}"
 
 msgctxt "model:electronic.mail.template,name:"
 msgid "Email Template"

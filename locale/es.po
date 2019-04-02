@@ -232,5 +232,17 @@ msgid "Reports"
 msgstr "Informes"
 
 msgctxt "view:electronic.mail:"
+msgid "Email File"
+msgstr "Fichero Email"
+
+msgctxt "view:electronic.mail:"
+msgid "HTML"
+msgstr "HTML"
+
+msgctxt "view:electronic.mail:"
+msgid "Plain Text"
+msgstr "Texto plano"
+
+msgctxt "view:electronic.mail:"
 msgid "Send Email"
 msgstr "Enviar correo"
