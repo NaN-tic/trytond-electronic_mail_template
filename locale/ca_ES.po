@@ -1,4 +1,4 @@
-# 
+#
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
@@ -13,13 +13,13 @@ msgid "There are not default SMTP server"
 msgstr "No hi ha cap servidor SMTP per defecte."
 
 msgctxt "error:electronic.mail.template:"
-msgid "Wrong connection to SMTP server. Email have not sent"
-msgstr "Ha fallat la connexió servidor SMTP. No s'ha enviat el correu."
-
-msgctxt "error:electronic.mail:"
-msgid "Invalid email. Please, check the email before save it."
+msgid ""
+"Wrong connection to SMTP server. Email have not sent.\n"
+"\n"
+"Server mail info:\n"
+"\n"
+"%s"
 msgstr ""
-"Correu electrònic no es correcte. Revisa els destinataris abans d'enviar."
 
 msgctxt "field:electronic.mail,body_html:"
 msgid "HTML (BODY)"
@@ -191,8 +191,11 @@ msgstr "La firma del usuari serà afegit al correu"
 
 msgctxt "help:ir.action.report,file_name:"
 msgid ""
-"File name e-mail attachment without extension. eg. sale_${record.reference}"
-msgstr "Nom del fitxer sense la extensió, ex. venda_${record.reference}"
+"Attached file of electronic mail without extension according to the engine "
+"that will be used in the template. eg. sale_${record.reference}"
+msgstr ""
+"Nom del fitxer sense la extensió, d'acord amb el motor utilitzat a la "
+"plantilla,ex. venda_${record.reference}"
 
 msgctxt "model:electronic.mail.template,name:"
 msgid "Email Template"
@@ -229,18 +232,6 @@ msgstr "General"
 msgctxt "view:electronic.mail.template:"
 msgid "Reports"
 msgstr "Informes"
-
-msgctxt "view:electronic.mail:"
-msgid "Email File"
-msgstr "Fitxer Email"
-
-msgctxt "view:electronic.mail:"
-msgid "HTML"
-msgstr "HTML"
-
-msgctxt "view:electronic.mail:"
-msgid "Plain Text"
-msgstr "Text pla"
 
 msgctxt "view:electronic.mail:"
 msgid "Send Email"
