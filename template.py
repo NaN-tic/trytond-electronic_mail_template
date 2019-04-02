@@ -6,6 +6,7 @@ from __future__ import with_statement
 
 import logging
 import mimetypes
+import unicodedata
 from email import encoders, charset
 from email.header import decode_header, Header
 from email.mime.multipart import MIMEMultipart
@@ -54,6 +55,13 @@ def recipients_from_fields(email_record):
     for field in ('to', 'cc', 'bcc'):
         recipients.extend(split_emails(getattr(email_record, field)))
     return recipients
+
+
+def unaccent(text):
+    if isinstance(text, str):
+        text = unicode(text, 'utf-8')
+    return unicodedata.normalize('NFKD', text).encode('ASCII',
+        'ignore')
 
 
 __all__ = ['Template', 'TemplateReport']
@@ -274,6 +282,7 @@ class Template(ModelSQL, ModelView):
                 ext, data, filename, file_name = report[0:5]
                 if file_name:
                     filename = template.eval(file_name, record)
+                filename = unaccent(filename)
                 filename = ext and '%s.%s' % (filename, ext) or filename
                 content_type, _ = mimetypes.guess_type(filename)
                 maintype, subtype = (
