@@ -2,25 +2,6 @@
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
-msgctxt "error:electronic.mail.template:"
-msgid "Not valid recipients emails. Check emails in To, Cc or Bcc"
-msgstr ""
-"Los correos electrónicos no son válidos. Revise los correos de los "
-"destinatarios, copia y copia oculta."
-
-msgctxt "error:electronic.mail.template:"
-msgid "There are not default SMTP server"
-msgstr "No se ha encontrado ningún servidor SMTP."
-
-msgctxt "error:electronic.mail.template:"
-msgid ""
-"Wrong connection to SMTP server. Email have not sent.\n"
-"\n"
-"Server mail info:\n"
-"\n"
-"%s"
-msgstr "Conexión con el servidor SMTP incorrecta. El correo no se ha enviado."
-
 msgctxt "field:electronic.mail,body_html:"
 msgid "HTML (BODY)"
 msgstr "HTML (BODY)"
@@ -43,11 +24,11 @@ msgstr "CC"
 
 msgctxt "field:electronic.mail.template,create_date:"
 msgid "Create Date"
-msgstr "Fecha creación"
+msgstr "Fecha de creación"
 
 msgctxt "field:electronic.mail.template,create_uid:"
 msgid "Create User"
-msgstr "Usuario creación"
+msgstr "Usuario de creación"
 
 msgctxt "field:electronic.mail.template,draft_mailbox:"
 msgid "Draft Mailbox"
@@ -98,7 +79,7 @@ msgid "Plain Text Body"
 msgstr "Texto plano cuerpo"
 
 msgctxt "field:electronic.mail.template,rec_name:"
-msgid "Name"
+msgid "Record Name"
 msgstr "Nombre"
 
 msgctxt "field:electronic.mail.template,reports:"
@@ -131,26 +112,26 @@ msgstr "Disparadores"
 
 msgctxt "field:electronic.mail.template,write_date:"
 msgid "Write Date"
-msgstr "Fecha modificación"
+msgstr "Fecha de modificación"
 
 msgctxt "field:electronic.mail.template,write_uid:"
 msgid "Write User"
-msgstr "Usuario modificación"
+msgstr "Usuario de modificación"
 
 msgctxt "field:electronic.mail.template.ir.action.report,create_date:"
 msgid "Create Date"
-msgstr "Fecha creación"
+msgstr "Fecha de creación"
 
 msgctxt "field:electronic.mail.template.ir.action.report,create_uid:"
 msgid "Create User"
-msgstr "Usuario creación"
+msgstr "Usuario de creación"
 
 msgctxt "field:electronic.mail.template.ir.action.report,id:"
 msgid "ID"
 msgstr "ID"
 
 msgctxt "field:electronic.mail.template.ir.action.report,rec_name:"
-msgid "Name"
+msgid "Record Name"
 msgstr "Nombre"
 
 msgctxt "field:electronic.mail.template.ir.action.report,report:"
@@ -163,11 +144,11 @@ msgstr "Plantilla"
 
 msgctxt "field:electronic.mail.template.ir.action.report,write_date:"
 msgid "Write Date"
-msgstr "Fecha modificación"
+msgstr "Fecha de modificación"
 
 msgctxt "field:electronic.mail.template.ir.action.report,write_uid:"
 msgid "Write User"
-msgstr "Usuario modificación"
+msgstr "Usuario de modificación"
 
 msgctxt "field:ir.action.report,file_name:"
 msgid "File Name Pattern"
@@ -191,7 +172,8 @@ msgstr "La firma del usuario se añidirá en el correo."
 
 msgctxt "help:ir.action.report,file_name:"
 msgid ""
-"File name e-mail attachment without extension. eg. sale_${record.reference}"
+"File name e-mail attachment without extension. with a syntax according to "
+"the engine that will be used in the template. eg. sale_${record.reference}"
 msgstr ""
 "Nombre del fichero adjunto sin extensión. Ej. venta_${record.reference}"
 
@@ -206,6 +188,24 @@ msgstr "Plantilla - Acción informe"
 msgctxt "model:ir.action,name:act_template_form"
 msgid "Templates"
 msgstr "Plantillas"
+
+msgctxt "model:ir.message,text:recipients_error"
+msgid "Not valid recipients emails. Check emails in To, Cc or Bcc"
+msgstr ""
+"No son válidos los correos electrónicos de los destinatarios. Consultar "
+"correos electrónicos en A, Cc o Bcc."
+
+msgctxt "model:ir.message,text:smtp_server_default"
+msgid "There are not default SMTP server"
+msgstr "No hay servidor SMTP predeterminado"
+
+msgctxt "model:ir.model.button,string:electronic_mail_send_mail_button"
+msgid "Send Email"
+msgstr "Enviar correo"
+
+msgctxt "model:ir.rule.group,name:rule_group_read_template"
+msgid "Read Email Template"
+msgstr "Leer plantilla de correo electrónico"
 
 msgctxt "model:ir.ui.menu,name:menu_email_template"
 msgid "Templates"
