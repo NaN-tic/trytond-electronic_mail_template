@@ -59,8 +59,8 @@ def recipients_from_fields(email_record):
 
 
 def unaccent(text):
-    if isinstance(text, str):
-        text = unicode(text, 'utf-8')
+    if isinstance(text, bytes):
+        text = text.decode('utf-8')
     return unicodedata.normalize('NFKD', text).encode('ASCII',
         'ignore')
 
