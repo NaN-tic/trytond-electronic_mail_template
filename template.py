@@ -29,6 +29,7 @@ from trytond.transaction import Transaction
 from trytond.i18n import gettext
 from trytond.exceptions import UserError
 
+
 def split_emails(emails):
     """Email IDs could be separated by ';' or ','
 
@@ -62,7 +63,7 @@ def unaccent(text):
     if isinstance(text, bytes):
         text = text.decode('utf-8')
     return unicodedata.normalize('NFKD', text).encode('ASCII',
-        'ignore')
+        'ignore').decode()
 
 
 __all__ = ['Template', 'TemplateReport']
