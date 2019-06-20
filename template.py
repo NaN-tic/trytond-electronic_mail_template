@@ -175,7 +175,7 @@ class Template(ModelSQL, ModelView):
 
         template = TextTemplate(expression)
         template_context = cls.template_context(record)
-        return template.generate(**template_context).render(encoding='UTF-8')
+        return template.generate(**template_context).render(encoding=None)
 
     @classmethod
     def _engine_jinja2(cls, expression, record):
