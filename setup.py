@@ -8,9 +8,9 @@ import io
 from configparser import ConfigParser
 
 MODULE = 'electronic_mail_template'
-PREFIX = 'trytonzz'
+PREFIX = 'nantic'
 MODULE2PREFIX = {
-    'electronic_mail': 'trytonzz',
+    'electronic_mail': 'nantic',
     'smtp': 'trytonspain',
     }
 
@@ -57,7 +57,7 @@ else:
     branch = series
 dependency_links = [
     ('hg+https://hg@bitbucket.org/nantic/trytond-electronic_mail@%(branch)s'
-        '#egg=trytonzz-electronic_mail-%(series)s' % {
+        '#egg=nantic-electronic_mail-%(series)s' % {
             'branch': branch,
             'series': series,
             }),
