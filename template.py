@@ -12,7 +12,7 @@ from email.header import decode_header, Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
-from email.utils import formatdate, make_msgid
+from email.utils import formatdate, make_msgid, getaddresses
 from genshi.template import TextTemplate
 try:
     from jinja2 import Template as Jinja2Template
@@ -30,23 +30,6 @@ from trytond.i18n import gettext
 from trytond.exceptions import UserError
 
 
-def split_emails(emails):
-    """Email IDs could be separated by ';' or ','
-
-    >>> email_list = '1@x.com;2@y.com , 3@z.com '
-    >>> emails = split_emails(email_list)
-    >>> emails
-    ['1@x.com', '2@y.com', '3@z.com']
-
-    :param email_ids: email id
-    :type email_ids: str or unicode
-    """
-    if not emails:
-        return []
-    emails = emails.replace(' ', '').replace(',', ';')
-    return emails.split(';')
-
-
 def recipients_from_fields(email_record):
     """
     Returns a list of email addresses who are the recipients of this email
@@ -55,9 +38,9 @@ def recipients_from_fields(email_record):
     """
     recipients = []
     for field in ('to', 'cc', 'bcc'):
-        recipients.extend(split_emails(getattr(email_record, field)))
+        recipients.extend([a for _, a in getaddresses(
+            [getattr(email_record, field)])])
     return recipients
-
 
 def unaccent(text):
     if isinstance(text, bytes):
