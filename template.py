@@ -241,8 +241,9 @@ class Template(ModelSQL, ModelView):
                 signature = user.signature.encode('utf-8')
                 plain = '%s\n--\n%s' % (plain, signature)
                 if html and not user.signature_html:
-                    html = '%s<br>--<br>%s' % (html.encode('utf-8'),
-                        signature.replace('\n', '<br>'))
+                    html = '%s<br/>--<br/>%s' % (html,
+                        signature.replace('\n', '<br/>'))
+
         if html:
         	html = "%s%s" % (html, footer)
         body = None
