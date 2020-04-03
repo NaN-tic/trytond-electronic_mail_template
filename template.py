@@ -38,8 +38,9 @@ def recipients_from_fields(email_record):
     """
     recipients = []
     for field in ('to', 'cc', 'bcc'):
-        recipients.extend([a for _, a in getaddresses(
-            [getattr(email_record, field)])])
+        mails = getattr(email_record, field)
+        if mails:
+            recipients.extend([a for _, a in getaddresses([mails])])
     return recipients
 
 def unaccent(text):
