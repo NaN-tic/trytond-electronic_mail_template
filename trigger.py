@@ -37,11 +37,3 @@ class Trigger(metaclass=PoolMeta):
             [('model', '=', 'electronic.mail.template')], limit=1)
         if models:
             return models[0].id
-
-    @staticmethod
-    def default_action_function():
-        """If invoked from the email_template fill
-        action function as 'mail_from_trigger'
-        """
-        email_trigger = Transaction().context.get('email_template', False)
-        return email_trigger and 'mail_from_trigger' or None
