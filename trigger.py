@@ -24,16 +24,3 @@ class Trigger(metaclass=PoolMeta):
         model = Transaction().context.get('model', None)
         if model:
             return model
-
-    @staticmethod
-    def default_action_model():
-        Model = Pool().get('ir.model')
-
-        email_trigger = Transaction().context.get('email_template', False)
-        if not email_trigger:
-            return
-
-        models = Model.search(
-            [('model', '=', 'electronic.mail.template')], limit=1)
-        if models:
-            return models[0].id
