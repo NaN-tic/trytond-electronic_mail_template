@@ -296,6 +296,7 @@ class Template(ModelSQL, ModelView):
         pool = Pool()
         Configuration = pool.get('electronic.mail.configuration')
         ElectronicEmail = pool.get('electronic.mail')
+        Template = pool.get('electronic.mail.template')
 
         template = cls(template_id)
         config = Configuration(1)
