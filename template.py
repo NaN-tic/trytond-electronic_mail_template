@@ -6,13 +6,12 @@
 
 import logging
 import mimetypes
-import unicodedata
 from email import encoders, charset
 from email.header import decode_header, Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
-from email.utils import formatdate, make_msgid, getaddresses
+from email.utils import formatdate, make_msgid
 from genshi.template import TextTemplate
 try:
     from jinja2 import Template as Jinja2Template
@@ -26,28 +25,7 @@ from trytond.model import ModelView, ModelSQL, fields
 from trytond.pyson import Eval
 from trytond.pool import Pool
 from trytond.transaction import Transaction
-from trytond.i18n import gettext
-from trytond.exceptions import UserError
-
-
-def recipients_from_fields(email_record):
-    """
-    Returns a list of email addresses who are the recipients of this email
-
-    :param email_record: Browse record of the email
-    """
-    recipients = []
-    for field in ('to', 'cc', 'bcc'):
-        mails = getattr(email_record, field)
-        if mails:
-            recipients.extend([a for _, a in getaddresses([mails])])
-    return recipients
-
-def unaccent(text):
-    if isinstance(text, bytes):
-        text = text.decode('utf-8')
-    return unicodedata.normalize('NFKD', text).encode('ASCII',
-        'ignore').decode()
+from trytond.modules.electronic_mail_template.tools import unaccent
 
 
 __all__ = ['Template', 'TemplateReport']
@@ -316,10 +294,11 @@ class Template(ModelSQL, ModelView):
         :param records: List Object of the records
         """
         pool = Pool()
-        ElectronicMail = pool.get('electronic.mail')
-        Template = pool.get('electronic.mail.template')
+        Configuration = pool.get('electronic.mail.configuration')
+        ElectronicEmail = pool.get('electronic.mail')
 
         template = cls(template_id)
+        config = Configuration(1)
 
         for record in records:
             # load data in language when send a record
@@ -328,17 +307,18 @@ class Template(ModelSQL, ModelView):
                 with Transaction().set_context(language=language):
                     template = Template(template.id)
 
-            values = {}
+            values = {'template': template}
             tmpl_fields = ('from_', 'sender', 'to', 'cc', 'bcc', 'subject',
                 'message_id', 'in_reply_to', 'plain', 'html')
             for field_name in tmpl_fields:
                 values[field_name] = getattr(template, field_name)
             mail_message = cls.render(template, record, values)
-            electronic_mail = ElectronicMail.create_from_mail(
-                mail_message, template.mailbox.id)
-            cls.send_mail(electronic_mail, template)
-            # add event
-            cls.add_event(template, record, electronic_mail, mail_message)
+            electronic_mail = ElectronicEmail.create_from_mail(
+                mail_message, template.mailbox.id, record)
+            with Transaction().set_context(
+                    queue_name='electronic_mail',
+                    queue_scheduled_at=config.send_email_after):
+                ElectronicEmail.__queue__.send_mail([electronic_mail])
         return True
 
     @classmethod
@@ -355,70 +335,6 @@ class Template(ModelSQL, ModelView):
         Trigger = Pool().get('ir.trigger')
         trigger = Trigger(trigger_id)
         return cls.render_and_send(trigger.email_template.id, records)
-
-    @classmethod
-    def send_mail(cls, mail_id, template=False):
-        """
-        Send out the given email using the SMTP_CLIENT if configured in the
-        Tryton Server configuration
-
-        :param email_id: ID of the email to be sent
-        :param template: Browse Record of the template
-        """
-        ElectronicMail = Pool().get('electronic.mail')
-        SMTP = Pool().get('smtp.server')
-
-        mail = ElectronicMail(mail_id)
-        recipients = recipients_from_fields(mail)
-
-        """SMTP Server from template or default"""
-        if not template:
-            servers = SMTP.search([
-                    ('state', '=', 'done'),
-                    ('default', '=', True),
-                    ])
-            if not len(servers) > 0:
-                raise UserError(gettext(
-                    'electronic_mail_template.smtp_server_default'))
-        server = template and template.smtp_server or servers[0]
-
-        """Validate recipients to send or move email to draft mailbox"""
-        if not ElectronicMail.validate_emails(recipients) and template:
-            """Draft Mailbox. Not send email"""
-            ElectronicMail.write([mail], {
-                'mailbox': template.draft_mailbox,
-                })
-            return False
-
-        mail_str = ElectronicMail._get_mail(mail)
-        server.send_mail(mail.from_, recipients, mail_str)
-        ElectronicMail.write([mail], {
-            'flag_send': True,
-            })
-        return True
-
-    @classmethod
-    def add_event(cls, template, record, electronic_email, email_message):
-        """
-        Add event if party_event is installed
-        :param template: Browse Record of the template
-        :param record: Browse record of the record
-        :param electronic_email: Browse record email to send
-        :param email_message: Data email to extract values
-        """
-        pool = Pool()
-        try:
-            Event = pool.get('party.event')
-        except KeyError:
-            return
-        if template.party:
-            party = template.eval(template.party, record)
-            resource = 'electronic.mail,%s' % electronic_email.id
-            values = {
-                'subject': decode_header(email_message.get('subject'))[0][0],
-                'description': electronic_email.body_plain,
-                }
-            Event.create_event(party, resource, values)
 
 
 class TemplateReport(ModelSQL):
