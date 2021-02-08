@@ -2,17 +2,13 @@
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
-msgctxt "field:electronic.mail,body_html:"
-msgid "HTML (BODY)"
-msgstr "HTML (Body)"
-
-msgctxt "field:electronic.mail,body_plain:"
-msgid "Plain Text (BODY)"
-msgstr "Text pla (BODY)"
-
 msgctxt "field:electronic.mail,flag_send:"
 msgid "Sent"
 msgstr "Enviat"
+
+msgctxt "field:electronic.mail,template:"
+msgid "Template"
+msgstr "Plantilla"
 
 msgctxt "field:electronic.mail.template,bcc:"
 msgid "BCC"
@@ -21,14 +17,6 @@ msgstr "BCC"
 msgctxt "field:electronic.mail.template,cc:"
 msgid "CC"
 msgstr "CC"
-
-msgctxt "field:electronic.mail.template,create_date:"
-msgid "Create Date"
-msgstr "Data de creació"
-
-msgctxt "field:electronic.mail.template,create_uid:"
-msgid "Create User"
-msgstr "Crear usuari"
 
 msgctxt "field:electronic.mail.template,draft_mailbox:"
 msgid "Draft Mailbox"
@@ -45,10 +33,6 @@ msgstr "Desde"
 msgctxt "field:electronic.mail.template,html:"
 msgid "HTML Body"
 msgstr "HTML Body"
-
-msgctxt "field:electronic.mail.template,id:"
-msgid "ID"
-msgstr "ID"
 
 msgctxt "field:electronic.mail.template,in_reply_to:"
 msgid "In Repply To"
@@ -78,10 +62,6 @@ msgctxt "field:electronic.mail.template,plain:"
 msgid "Plain Text Body"
 msgstr "Cos text pla"
 
-msgctxt "field:electronic.mail.template,rec_name:"
-msgid "Record Name"
-msgstr "Nom"
-
 msgctxt "field:electronic.mail.template,reports:"
 msgid "Reports"
 msgstr "Informes"
@@ -110,30 +90,6 @@ msgctxt "field:electronic.mail.template,triggers:"
 msgid "Triggers"
 msgstr "Disparadors"
 
-msgctxt "field:electronic.mail.template,write_date:"
-msgid "Write Date"
-msgstr "Data de modificació"
-
-msgctxt "field:electronic.mail.template,write_uid:"
-msgid "Write User"
-msgstr "Usuari de modificació"
-
-msgctxt "field:electronic.mail.template.ir.action.report,create_date:"
-msgid "Create Date"
-msgstr "Data de creació"
-
-msgctxt "field:electronic.mail.template.ir.action.report,create_uid:"
-msgid "Create User"
-msgstr "Crear usuari"
-
-msgctxt "field:electronic.mail.template.ir.action.report,id:"
-msgid "ID"
-msgstr "ID"
-
-msgctxt "field:electronic.mail.template.ir.action.report,rec_name:"
-msgid "Record Name"
-msgstr "Nom"
-
 msgctxt "field:electronic.mail.template.ir.action.report,report:"
 msgid "Report"
 msgstr "Informe"
@@ -141,14 +97,6 @@ msgstr "Informe"
 msgctxt "field:electronic.mail.template.ir.action.report,template:"
 msgid "Template"
 msgstr "Plantilla"
-
-msgctxt "field:electronic.mail.template.ir.action.report,write_date:"
-msgid "Write Date"
-msgstr "Data de modificació"
-
-msgctxt "field:electronic.mail.template.ir.action.report,write_uid:"
-msgid "Write User"
-msgstr "Usuari de modificació"
 
 msgctxt "field:ir.action.report,file_name:"
 msgid "File Name Pattern"
@@ -215,14 +163,6 @@ msgstr "Plantilles"
 msgctxt "view:electronic.mail.template:"
 msgid "Advanced"
 msgstr "Avançat"
-
-msgctxt "view:electronic.mail.template:"
-msgid "Email"
-msgstr "Correu electrònic"
-
-msgctxt "view:electronic.mail.template:"
-msgid "Email Templates"
-msgstr "Plantilla correu"
 
 msgctxt "view:electronic.mail.template:"
 msgid "General"
