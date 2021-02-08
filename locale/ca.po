@@ -6,6 +6,10 @@ msgctxt "field:electronic.mail,flag_send:"
 msgid "Sent"
 msgstr "Enviat"
 
+msgctxt "field:electronic.mail,template:"
+msgid "Template"
+msgstr "Plantilla"
+
 msgctxt "field:electronic.mail.template,bcc:"
 msgid "BCC"
 msgstr "BCC"

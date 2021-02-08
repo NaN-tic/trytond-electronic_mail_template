@@ -4,7 +4,11 @@ msgstr "Content-Type: text/plain; charset=utf-8\n"
 
 msgctxt "field:electronic.mail,flag_send:"
 msgid "Sent"
-msgstr "Enviat"
+msgstr "Enviado"
+
+msgctxt "field:electronic.mail,template:"
+msgid "Template"
+msgstr "Plantilla"
 
 msgctxt "field:electronic.mail.template,bcc:"
 msgid "BCC"
@@ -16,7 +20,7 @@ msgstr "CC"
 
 msgctxt "field:electronic.mail.template,draft_mailbox:"
 msgid "Draft Mailbox"
-msgstr "Bústia esborrany"
+msgstr "Buzón borrador"
 
 msgctxt "field:electronic.mail.template,engine:"
 msgid "Engine"
@@ -32,7 +36,7 @@ msgstr "HTML Body"
 
 msgctxt "field:electronic.mail.template,in_reply_to:"
 msgid "In Repply To"
-msgstr "In-Repply-To"
+msgstr "In Repply To"
 
 msgctxt "field:electronic.mail.template,language:"
 msgid "Language"
@@ -40,23 +44,23 @@ msgstr "Idioma"
 
 msgctxt "field:electronic.mail.template,mailbox:"
 msgid "Mailbox"
-msgstr "Bústia de correu"
+msgstr "Buzón de correo"
 
 msgctxt "field:electronic.mail.template,message_id:"
 msgid "Message-ID"
-msgstr "Missatge-ID"
+msgstr "Modelo"
 
 msgctxt "field:electronic.mail.template,model:"
 msgid "Model"
-msgstr "Model"
+msgstr "Modelo"
 
 msgctxt "field:electronic.mail.template,name:"
 msgid "Name"
-msgstr "Nom"
+msgstr "Nombre"
 
 msgctxt "field:electronic.mail.template,plain:"
 msgid "Plain Text Body"
-msgstr "Cos text pla"
+msgstr "Texto plano cuerpo"
 
 msgctxt "field:electronic.mail.template,reports:"
 msgid "Reports"
@@ -64,11 +68,11 @@ msgstr "Informes"
 
 msgctxt "field:electronic.mail.template,sender:"
 msgid "Sender"
-msgstr "Enviat per"
+msgstr "Enviado"
 
 msgctxt "field:electronic.mail.template,signature:"
 msgid "Use Signature"
-msgstr "Utilitzar la signatura"
+msgstr "Añadir firma"
 
 msgctxt "field:electronic.mail.template,smtp_server:"
 msgid "SMTP Server"
@@ -76,15 +80,15 @@ msgstr "Servidor SMTP"
 
 msgctxt "field:electronic.mail.template,subject:"
 msgid "Subject"
-msgstr "Assumpte"
+msgstr "Asunto"
 
 msgctxt "field:electronic.mail.template,to:"
 msgid "To"
-msgstr "Per a"
+msgstr "Para"
 
 msgctxt "field:electronic.mail.template,triggers:"
 msgid "Triggers"
-msgstr "Disparadors"
+msgstr "Disparadores"
 
 msgctxt "field:electronic.mail.template.ir.action.report,report:"
 msgid "Report"
@@ -96,7 +100,7 @@ msgstr "Plantilla"
 
 msgctxt "field:ir.action.report,file_name:"
 msgid "File Name Pattern"
-msgstr "Nom del fitxer"
+msgstr "Nombre informe"
 
 msgctxt "field:ir.trigger,email_template:"
 msgid "Template"
@@ -104,65 +108,60 @@ msgstr "Plantilla"
 
 msgctxt "help:electronic.mail.template,language:"
 msgid "Expression to find the ISO langauge code"
-msgstr "Expressió per cercar el codi ISO del idioma"
+msgstr "Expresión para encontrar el código ISO del idioma"
 
 msgctxt "help:electronic.mail.template,message_id:"
 msgid "Unique Message Identifier"
-msgstr "Identificador únic del missatge"
+msgstr "Identificador único mensaje"
 
 msgctxt "help:electronic.mail.template,signature:"
 msgid "The signature from the User details will be appened to the mail."
-msgstr "La firma del usuari serà afegit al correu"
+msgstr "La firma del usuario se añidirá en el correo."
 
 msgctxt "help:ir.action.report,file_name:"
 msgid ""
 "File name e-mail attachment without extension. with a syntax according to "
 "the engine that will be used in the template. eg. sale_${record.reference}"
 msgstr ""
-"Nom del fitxer sense la extensió, d'acord amb el motor utilitzat a la "
-"plantilla,ex. venda_${record.reference}"
+"Nombre del fichero adjunto sin extensión. Ej. venta_${record.reference}"
 
 msgctxt "model:electronic.mail.template,name:"
 msgid "Email Template"
-msgstr "Plantilla correu"
+msgstr "Plantillas Email"
 
 msgctxt "model:electronic.mail.template.ir.action.report,name:"
 msgid "Template - Report Action"
-msgstr "Plantilla - Acció informe"
+msgstr "Plantilla - Acción informe"
 
 msgctxt "model:ir.action,name:act_template_form"
 msgid "Templates"
-msgstr "Plantilles"
+msgstr "Plantillas"
 
 msgctxt "model:ir.message,text:recipients_error"
 msgid "Not valid recipients emails. Check emails in To, Cc or Bcc"
 msgstr ""
-"No són vàlids els correus electrònics dels destinataris. Consultar correus "
-"electrònics en A, CC o Bcc."
+"No son válidos los correos electrónicos de los destinatarios. Consultar "
+"correos electrónicos en A, Cc o Bcc."
 
 msgctxt "model:ir.message,text:smtp_server_default"
 msgid "There are not default SMTP server"
-msgstr "No hi ha un servidor SMTP per defecte"
+msgstr "No hay servidor SMTP predeterminado"
 
 msgctxt "model:ir.model.button,string:electronic_mail_send_mail_button"
 msgid "Send Email"
-msgstr "Envia correu"
+msgstr "Enviar correo"
 
 msgctxt "model:ir.rule.group,name:rule_group_read_template"
 msgid "Read Email Template"
-msgstr "Llegir plantilla de correu electrònic"
+msgstr "Leer plantilla de correo electrónico"
 
 msgctxt "model:ir.ui.menu,name:menu_email_template"
 msgid "Templates"
-msgstr "Plantilles"
-
-msgctxt "selection:ir.trigger,action:"
-msgid "Email Template"
-msgstr "Plantilla correu"
+msgstr "Plantillas"
 
 msgctxt "view:electronic.mail.template:"
 msgid "Advanced"
-msgstr "Avançat"
+msgstr "Avanzado"
 
 msgctxt "view:electronic.mail.template:"
 msgid "General"
@@ -173,5 +172,17 @@ msgid "Reports"
 msgstr "Informes"
 
 msgctxt "view:electronic.mail:"
+msgid "Email File"
+msgstr "Fichero Email"
+
+msgctxt "view:electronic.mail:"
+msgid "HTML"
+msgstr "HTML"
+
+msgctxt "view:electronic.mail:"
+msgid "Plain Text"
+msgstr "Texto plano"
+
+msgctxt "view:electronic.mail:"
 msgid "Send Email"
-msgstr "Envia correu"
+msgstr "Enviar correo"
