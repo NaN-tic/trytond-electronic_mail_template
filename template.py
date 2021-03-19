@@ -7,7 +7,7 @@
 import logging
 import mimetypes
 from email import encoders, charset
-from email.header import decode_header, Header
+from email.header import Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
