@@ -2,9 +2,7 @@
 <!-- This file is part electronic_mail_template module for Tryton.
 The COPYRIGHT file at the top level of this repository contains the full copyright notices and license terms. -->
 <data>
-    <xpath
-        expr="/form/notebook/page[@string='General']/field[@name='email']"
-        position="after">
+    <xpath expr="/form/notebook/page[@string='General']" position="inside">
         <newline/>
         <label name="file_name"/>
         <field name="file_name"/>
