@@ -4,8 +4,6 @@
 from trytond.model import fields
 from trytond.pool import PoolMeta
 
-__all__ = ['ActionReport']
-
 
 class ActionReport(metaclass=PoolMeta):
     "Action report"

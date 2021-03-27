@@ -3,9 +3,7 @@
 # the full copyright notices and license terms.
 from trytond.model import fields
 from trytond.transaction import Transaction
-from trytond.pool import Pool, PoolMeta
-
-__all__ = ['Trigger']
+from trytond.pool import PoolMeta
 
 
 class Trigger(metaclass=PoolMeta):

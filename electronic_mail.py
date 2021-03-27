@@ -8,8 +8,6 @@ from trytond.i18n import gettext
 from trytond.exceptions import UserError
 from trytond.modules.electronic_mail_template.tools import recipients_from_fields
 
-__all__ = ['ElectronicMail']
-
 
 class ElectronicMail(metaclass=PoolMeta):
     __name__ = 'electronic.mail'
