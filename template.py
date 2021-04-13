@@ -24,6 +24,8 @@ except ImportError:
 from trytond.model import ModelView, ModelSQL, fields
 from trytond.pyson import Eval
 from trytond.pool import Pool
+from trytond.i18n import gettext
+from trytond.exceptions import UserError
 from trytond.transaction import Transaction
 from trytond.modules.electronic_mail_template.tools import unaccent
 
@@ -135,9 +137,19 @@ class Template(ModelSQL, ModelView):
         if not expression:
             return ''
 
+        generate = None
         template = TextTemplate(expression)
         template_context = cls.template_context(record)
-        return template.generate(**template_context).render(encoding=None)
+
+        try:
+            generate = template.generate(**template_context).render(
+                encoding=None)
+        except Exception as message:
+            raise UserError(gettext(
+                'electronic_mail_template.generate_template_exception',
+                error=repr(message)))
+
+        return generate
 
     @classmethod
     def _engine_jinja2(cls, expression, record):
