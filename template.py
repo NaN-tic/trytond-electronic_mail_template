@@ -137,7 +137,6 @@ class Template(ModelSQL, ModelView):
         if not expression:
             return ''
 
-        generate = None
         template = TextTemplate(expression)
         template_context = cls.template_context(record)
 
