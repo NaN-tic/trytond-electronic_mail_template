@@ -141,14 +141,12 @@ class Template(ModelSQL, ModelView):
         template_context = cls.template_context(record)
 
         try:
-            generate = template.generate(**template_context).render(
+            return template.generate(**template_context).render(
                 encoding=None)
         except Exception as message:
             raise UserError(gettext(
                 'electronic_mail_template.generate_template_exception',
                 error=repr(message)))
-
-        return generate
 
     @classmethod
     def _engine_jinja2(cls, expression, record):
