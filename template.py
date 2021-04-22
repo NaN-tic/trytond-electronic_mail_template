@@ -280,8 +280,9 @@ class Template(ModelSQL, ModelView):
                 with Transaction().set_context(language=language):
                     report_action = ActionReport(report_action.id)
             report = Pool().get(report_action.report_name, type='report')
-            reports.append([report.execute([record.id], {'id': record.id}),
-                report_action.file_name])
+            report_execute = report.execute([record.id], {'id': record.id})
+            if report_execute:
+                reports.append([report_execute, report_action.file_name])
 
         # The boolean for direct print in the tuple is useless for emails
         return [(r[0][0], r[0][1], r[0][3], r[1]) for r in reports]
