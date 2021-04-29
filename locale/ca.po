@@ -138,6 +138,10 @@ msgctxt "model:ir.action,name:act_template_form"
 msgid "Templates"
 msgstr "Plantilles"
 
+msgctxt "model:ir.message,text:generate_template_exception"
+msgid "An Exception Ocurred: %(error)s"
+msgstr "S'ha produït una excepció: %(error)s"
+
 msgctxt "model:ir.message,text:recipients_error"
 msgid "Not valid recipients emails. Check emails in To, Cc or Bcc"
 msgstr ""
