@@ -10,8 +10,7 @@ this repository contains the full copyright notices and license terms. -->
             <field name="text">There are not default SMTP server</field>
         </record>
         <record model="ir.message" id="generate_template_exception">
-            <field name="text">An Exception Ocurred:
-            %(error)s</field>
+            <field name="text">An Exception Ocurred: %(error)s</field>
         </record>
     </data>
 </tryton>
