@@ -349,7 +349,7 @@ class Template(ModelSQL, ModelView):
             ext, data, filename, file_name = report.execute(record_ids, {})
 
             if file_name:
-                filename = self.eval(file_name, record_ids).decode('utf-8')
+                filename = self.eval(file_name, record_ids)
             filename = ext and '%s.%s' % (filename, ext) or filename
             content_type, _ = mimetypes.guess_type(filename)
             maintype, subtype = (
