@@ -6,7 +6,8 @@ from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval, Bool
 from trytond.i18n import gettext
 from trytond.exceptions import UserError
-from trytond.modules.electronic_mail_template.tools import recipients_from_fields
+from trytond.modules.electronic_mail_template.tools import (
+    recipients_from_fields)
 
 __all__ = ['ElectronicMail']
 
@@ -59,8 +60,10 @@ class ElectronicMail(metaclass=PoolMeta):
         for mail in mails:
             recipients = recipients_from_fields(mail)
 
-            mail_smtp_server = mail.template.server or smtp_server if mail.template else smtp_server
-            mail_draft_mailbox = mail.template.draft_mailbox or draft_mailbox if mail.template else draft_mailbox
+            mail_smtp_server = (mail.template.server or smtp_server
+                if mail.template else smtp_server)
+            mail_draft_mailbox = (mail.template.draft_mailbox or draft_mailbox
+                if mail.template else draft_mailbox)
 
             # Validate recipients to send or move email to draft mailbox
             if not ElectronicMail.validate_emails(recipients):
