@@ -322,6 +322,9 @@ class Template(ModelSQL, ModelView):
                 mail_message, template.mailbox.id, record)
             if not electronic_mail:
                 continue
+            electronic_mail.template = template
+            electronic_mail.save()
+
             with Transaction().set_context(
                     queue_name='electronic_mail',
                     queue_scheduled_at=config.send_email_after):
