@@ -60,7 +60,7 @@ class ElectronicMail(metaclass=PoolMeta):
         for mail in mails:
             recipients = recipients_from_fields(mail)
 
-            mail_smtp_server = (mail.template.server or smtp_server
+            mail_smtp_server = (mail.template.smtp_server or smtp_server
                 if mail.template else smtp_server)
             mail_draft_mailbox = (mail.template.draft_mailbox or draft_mailbox
                 if mail.template else draft_mailbox)
