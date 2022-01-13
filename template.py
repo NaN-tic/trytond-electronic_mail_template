@@ -11,6 +11,7 @@ from email.header import Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
+from email.mime.image import MIMEImage
 from email.utils import formatdate, make_msgid
 from genshi.template import TextTemplate
 try:
@@ -68,6 +69,7 @@ class Template(ModelSQL, ModelView):
         'mail.')
     message_id = fields.Char('Message-ID', help='Unique Message Identifier')
     in_reply_to = fields.Char('In Repply To')
+    attachments = fields.One2Many('ir.attachment', 'resource', "Attachments")
 
     @staticmethod
     def default_engine():
@@ -212,13 +214,13 @@ class Template(ModelSQL, ModelView):
             User = Pool().get('res.user')
             user = User(Transaction().user)
             if html and user.signature_html:
-                signature = user.signature_html.encode('utf8')
+                signature = user.signature_html
                 html = '%s<br>--<br>%s' % (html, signature)
             if plain and user.signature:
-                signature = user.signature.encode('utf-8')
+                signature = user.signature
                 plain = '%s\n--\n%s' % (plain, signature)
                 if html and not user.signature_html:
-                    html = '%s<br>--<br>%s' % (html.encode('utf-8'),
+                    html = '%s<br>--<br>%s' % (html,
                         signature.replace('\n', '<br>'))
         if html:
             html = "%s%s" % (html, footer)
@@ -255,6 +257,72 @@ class Template(ModelSQL, ModelView):
 
                 attachment = MIMEBase(maintype, subtype)
                 attachment.set_payload(data)
+                encoders.encode_base64(attachment)
+            User = Pool().get('res.user')
+            user = User(Transaction().user)
+            if html and user.signature_html:
+                attachment.add_header(
+                    'Content-Disposition', 'attachment', filename=filename)
+                message.attach(attachment)
+
+        # Attach attachments
+        attachments = []
+        if 'attachments' in values:
+            attachments = values.get('attachments')
+        else:
+            attachments = template.attachments
+        if attachments:
+            for attach in attachments:
+                # only support attach data; not links
+                if attach.type != 'data':
+                    continue
+                filename = unaccent(attach.name)
+                content_type, _ = mimetypes.guess_type(filename)
+                maintype, subtype = (
+                    content_type or 'application/octet-stream'
+                    ).split('/', 1)
+
+                if attach.email_template_cid and maintype == 'image':
+                    attachment = MIMEImage(attach.data, subtype)
+                    attachment.add_header(
+                        'Content-ID', '<%s>' % filename.replace('.%s' % subtype, ''))
+                else:
+                    attachment = MIMEBase(maintype, subtype)
+                    attachment.set_payload(attach.data)
+                    encoders.encode_base64(attachment)
+                    attachment.add_header(
+                        'Content-Disposition', 'attachment', filename=filename)
+                message.attach(attachment)
+
+        # attachment user signature
+        if template.signature and html and user.signature_html:
+            attachments = [a for a in user.attachments if a.email_template_cid]
+            for attach in attachments:
+                # only support attach data; not links
+                if attach.type != 'data':
+                    continue
+                filename = unaccent(attach.name)
+                content_type, _ = mimetypes.guess_type(filename)
+                maintype, subtype = (
+                    content_type or 'application/octet-stream'
+                    ).split('/', 1)
+
+                if maintype == 'image':
+                    attachment = MIMEImage(attach.data, subtype)
+                    attachment.add_header(
+                        'Content-ID', '<%s>' % filename.replace('.%s' % subtype, ''))
+                    message.attach(attachment)
+
+        # attach extra files
+        if values.get('attachment_files'):
+            for attach in values.get('attachment_files'):
+                filename = unaccent(attach.name)
+                content_type, _ = mimetypes.guess_type(filename)
+                maintype, subtype = (
+                    content_type or 'application/octet-stream'
+                    ).split('/', 1)
+                attachment = MIMEBase(maintype, subtype)
+                attachment.set_payload(attach.data)
                 encoders.encode_base64(attachment)
                 attachment.add_header(
                     'Content-Disposition', 'attachment', filename=filename)
