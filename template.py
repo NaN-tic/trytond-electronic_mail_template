@@ -65,8 +65,7 @@ class Template(ModelSQL, ModelView):
 
     @staticmethod
     def default_engine():
-        '''Default Engine'''
-        return 'genshi'
+        return 'jinja2' if jinja2_loaded else 'genshi'
 
     @classmethod
     def get_engines(cls):
