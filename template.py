@@ -188,7 +188,7 @@ class Template(ModelSQL, ModelView):
                 record), 'utf-8')
 
         # HTML & Text Alternate parts
-        plain = template.eval(values['plain'], record)
+        plain = BeautifulSoup(template.eval(values['plain'], record)).get_text()
         html = template.eval(values['html'], record)
         header = """
             <html>
