@@ -205,13 +205,13 @@ class Template(ModelSQL, ModelView):
             User = Pool().get('res.user')
             user = User(Transaction().user)
             if html and user.signature_html:
-                signature = user.signature_html.encode('utf8')
+                signature = user.signature_html
                 html = '%s<br>--<br>%s' % (html, signature)
             if plain and user.signature:
-                signature = user.signature.encode('utf-8')
+                signature = user.signature
                 plain = '%s\n--\n%s' % (plain, signature)
                 if html and not user.signature_html:
-                    html = '%s<br>--<br>%s' % (html.encode('utf-8'),
+                    html = '%s<br>--<br>%s' % (html,
                         signature.replace('\n', '<br>'))
         if html:
             html = "%s%s" % (html, footer)
