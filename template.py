@@ -6,6 +6,7 @@
 
 import logging
 import mimetypes
+import dateutil.tz
 from email import encoders, charset
 from email.header import Header
 from email.mime.multipart import MIMEMultipart
@@ -108,6 +109,7 @@ class Template(ModelSQL, ModelView):
 
         This is mainly to assist in the inheritance pattern
         """
+        Template = Pool().get('electronic.mail.template')
         User = Pool().get('res.user')
         user = None
         if Transaction().user:
@@ -115,6 +117,7 @@ class Template(ModelSQL, ModelView):
         return {
             'record': record,
             'user': user,
+            'format_datetime': Template.format_datetime,
             }
 
     @classmethod
@@ -374,6 +377,20 @@ class Template(ModelSQL, ModelView):
                 'Content-Disposition', 'attachment', filename=filename)
             attachments.append(attachment)
         return attachments
+
+    @classmethod
+    def format_datetime(cls, value, lang=None, format=None, timezone=None):
+        pool = Pool()
+        Lang = pool.get('ir.lang')
+        if lang is None:
+            lang = Lang.get()
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=dateutil.tz.tzutc())
+        if timezone:
+            if isinstance(timezone, str):
+                timezone = dateutil.tz.gettz(timezone)
+            value = value.astimezone(timezone)
+        return lang.strftime(value, format)
 
 
 class TemplateReport(ModelSQL):
