@@ -25,6 +25,7 @@ from trytond.i18n import gettext
 from trytond.exceptions import UserError
 from trytond.transaction import Transaction
 from trytond.modules.electronic_mail_template.tools import unaccent
+from trytond.report import Report
 
 
 class Template(ModelSQL, ModelView):
@@ -108,6 +109,11 @@ class Template(ModelSQL, ModelView):
         return {
             'record': record,
             'user': user,
+            'format_date': Report.format_date,
+            'format_datetime': Report.format_datetime,
+            'format_timedelta': Report.format_timedelta,
+            'format_currency': Report.format_currency,
+            'format_number': Report.format_number,
             }
 
     @classmethod
