@@ -70,8 +70,7 @@ class ElectronicMail(metaclass=PoolMeta):
                 to_draft.extend(([mail], {'mailbox': mail_draft_mailbox}))
                 continue
 
-            mail_str = ElectronicMail._get_mail(mail)
-            mail_smtp_server.send_mail(mail.from_, recipients, mail_str)
+            mail_smtp_server.send_mail(mail.from_, recipients, mail.mail_file)
             if not mail.flag_send:
                 to_flag_send.append(mail)
 
