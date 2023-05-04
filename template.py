@@ -300,7 +300,7 @@ class Template(ModelSQL, ModelView):
         return [(r[0][0], r[0][1], r[0][3], r[1]) for r in reports]
 
     @classmethod
-    def render_and_send(cls, template_id, records):
+    def render_and_send(cls, template_id, records, queue=True):
         """
         Render the template and send
         :param template_id: ID template
@@ -333,11 +333,13 @@ class Template(ModelSQL, ModelView):
                 continue
             electronic_mail.template = template
             electronic_mail.save()
-
-            with Transaction().set_context(
-                    queue_name='electronic_mail',
-                    queue_scheduled_at=config.send_email_after):
-                ElectronicEmail.__queue__.send_mail([electronic_mail])
+            if queue:
+                with Transaction().set_context(
+                        queue_name='electronic_mail',
+                        queue_scheduled_at=config.send_email_after):
+                    ElectronicEmail.__queue__.send_mail([electronic_mail])
+            else:
+                ElectronicEmail.send_mail([electronic_mail])
         return True
 
     @classmethod
