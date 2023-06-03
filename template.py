@@ -18,6 +18,7 @@ except ImportError:
     logging.getLogger('electronic_mail_template').error(
         'Unable to import jinja2. Install jinja2 package.')
 
+from trytond.config import config
 from trytond.model import ModelView, ModelSQL, fields
 from trytond.pyson import Eval
 from trytond.pool import Pool
@@ -26,6 +27,8 @@ from trytond.exceptions import UserError
 from trytond.transaction import Transaction
 from trytond.modules.electronic_mail_template.tools import unaccent
 from trytond.report import Report
+
+QUEUE_NAME = config.get('electronic_mail', 'queue_name', default='default')
 
 
 class Template(ModelSQL, ModelView):
@@ -331,7 +334,7 @@ class Template(ModelSQL, ModelView):
             electronic_mail.save()
 
             with Transaction().set_context(
-                    queue_name='electronic_mail',
+                    queue_name=QUEUE_NAME,
                     queue_scheduled_at=config.send_email_after):
                 ElectronicEmail.__queue__.send_mail([electronic_mail])
         return True
