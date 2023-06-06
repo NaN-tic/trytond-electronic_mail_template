@@ -165,7 +165,7 @@ class Template(ModelSQL, ModelView):
         return template.render(template_context)
 
     @classmethod
-    def render(cls, template, record, values):
+    def render(cls, template, record, values, render_report=True):
         '''Renders the template and returns as email object
         :param template: Browse Record of the template
         :param record: Browse Record of the record on which the template
@@ -243,7 +243,7 @@ class Template(ModelSQL, ModelView):
             message.attach(body)
 
         # Attach reports
-        if template.reports:
+        if render_report and template.reports:
             reports = cls.render_reports(template, record)
             for report in reports:
                 ext, data, filename, file_name = report[0:5]
@@ -270,8 +270,8 @@ class Template(ModelSQL, ModelView):
         '''Renders the reports and returns as a list of tuple
 
         :param template: Browse Record of the template
-        :param record: Browse Record of the record on which the template
-            is to generate the data on
+        :param record: List Browse Record or Browse Record of the record
+            on which the template is to generate the data on
         :return: List of tuples with:
             report_type
             data
@@ -281,18 +281,27 @@ class Template(ModelSQL, ModelView):
         pool = Pool()
         ActionReport = pool.get('ir.action.report')
 
-        if template.language:
-            language = template.eval(template.language, record)
+        if isinstance(record, list):
+            ids = [r.id for r in record]
+            record = record[0]
         else:
-            language = False
+            ids = [record.id]
+
+        lang = Transaction().language
+        if template.language:
+            lang = template.eval(template.language, record) or lang
 
         reports = []
         for report_action in template.reports:
-            if language:
-                with Transaction().set_context(language=language):
-                    report_action = ActionReport(report_action.id)
-            report = Pool().get(report_action.report_name, type='report')
-            report_execute = report.execute([record.id], {'id': record.id})
+            with Transaction().set_context(language=lang):
+                report_action = ActionReport(report_action.id)
+                report = Pool().get(report_action.report_name, type='report')
+                report_execute = report.execute(ids, {
+                    'model': report_action.model,
+                    'id': ids[0],
+                    'ids': ids,
+                    'action_id': report_action.id,
+                    })
             if report_execute:
                 reports.append([report_execute, report_action.file_name])
 
