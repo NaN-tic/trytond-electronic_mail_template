@@ -314,15 +314,20 @@ class Template(ModelSQL, ModelView):
             # load data in language when send a record
             if template.language:
                 language = template.eval(template.language, record)
-                with Transaction().set_context(language=language):
-                    template = Template(template.id)
+            else:
+                language = Transaction().context.get('language')
+
+            with Transaction().set_context(language=language):
+                template = Template(template.id)
 
             values = {'template': template}
             tmpl_fields = ('from_', 'sender', 'to', 'cc', 'bcc', 'subject',
                 'message_id', 'in_reply_to', 'plain', 'html')
             for field_name in tmpl_fields:
                 values[field_name] = getattr(template, field_name)
-            mail_message = cls.render(template, record, values)
+
+            with Transaction().set_context(language=language):
+                mail_message = cls.render(template, record, values)
             electronic_mail = ElectronicEmail.create_from_mail(
                 mail_message, template.mailbox.id, record)
             if not electronic_mail:
