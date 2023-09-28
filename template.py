@@ -171,6 +171,12 @@ class Template(ModelSQL, ModelView):
             is to generate the data on
         :return: 'email.message.Message' instance
         '''
+        # It is hard to write correct e-mails even using the email module.
+        # It is a good practice to check the generated e-mail using
+        # https://www.mimevalidator.net/index.html
+        # any time we make a change here.
+        # Remember to use unix2dos before uploading for check as smtplib does
+        # that conversion automatically.
         ElectronicMail = Pool().get('electronic.mail')
         message = MIMEMultipart()
         messageid = template.eval(values['message_id'], record)
@@ -194,7 +200,7 @@ class Template(ModelSQL, ModelView):
                 template.eval(values['bcc'], record))
 
         message['Subject'] = Header(template.eval(values['subject'],
-                record), 'utf-8')
+                record), 'utf-8').encode()
 
         # HTML & Text Alternate parts
         plain = template.eval(values['plain'], record)
@@ -227,7 +233,7 @@ class Template(ModelSQL, ModelView):
         body = None
         if html and plain:
             body = MIMEMultipart('alternative')
-        charset.add_charset('utf-8', charset.QP, charset.QP)
+        charset.add_charset('utf-8')
         if plain:
             if body:
                 body.attach(MIMEText(plain, 'plain', _charset='utf-8'))
