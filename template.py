@@ -234,7 +234,7 @@ class Template(ModelSQL, ModelView):
         body = None
         if html and plain:
             body = MIMEMultipart('alternative')
-        charset.add_charset('utf-8')
+        charset.add_charset('utf-8', charset.QP, charset.QP)
         if plain:
             if body:
                 body.attach(MIMEText(plain, 'plain', _charset='utf-8'))
