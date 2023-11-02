@@ -50,6 +50,9 @@ The COPYRIGHT file at the top level of this repository contains the full copyrig
         <page string="Reports" id="reports">
             <field name="reports" colspan="4"/>
         </page>
+        <page string="Attachments" id="attachments">
+            <field name="attachments" colspan="4"/>
+        </page>
         <page string="Advanced" id="advanced">
             <label name="engine"/>
             <field name="engine"/>
