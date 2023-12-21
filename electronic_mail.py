@@ -56,6 +56,9 @@ class ElectronicMail(metaclass=PoolMeta):
         to_flag_send = []
         to_draft = []
         for mail in mails:
+            if not mail.mail_file:
+                continue
+
             recipients = recipients_from_fields(mail)
 
             mail_smtp_server = (mail.template.smtp_server or smtp_server
