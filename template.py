@@ -13,6 +13,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.utils import formatdate, make_msgid
+from email import policy
 from genshi.template import TextTemplate
 try:
     from jinja2 import Template as Jinja2Template
@@ -164,6 +165,11 @@ class Template(ModelSQL, ModelView):
         template_context = cls.template_context(record)
         return template.render(template_context)
 
+    @staticmethod
+    def _get_policy():
+        # See https://docs.python.org/3/library/email.policy.html
+        return policy.compat32.clone(linesep='\r\n', raise_on_defect=True)
+
     @classmethod
     def render(cls, template, record, values, render_report=True):
         '''Renders the template and returns as email object
@@ -179,7 +185,8 @@ class Template(ModelSQL, ModelView):
         # Remember to use unix2dos before uploading for check as smtplib does
         # that conversion automatically.
         ElectronicMail = Pool().get('electronic.mail')
-        message = MIMEMultipart()
+
+        message = MIMEMultipart(policy=cls._get_policy())
         messageid = template.eval(values['message_id'], record)
         message['Message-Id'] = messageid or make_msgid()
         message['Date'] = formatdate(localtime=1)
@@ -233,18 +240,22 @@ class Template(ModelSQL, ModelView):
             html = "%s%s" % (html, footer)
         body = None
         if html and plain:
-            body = MIMEMultipart('alternative')
+            body = MIMEMultipart('alternative', policy=cls._get_policy())
         charset.add_charset('utf-8', charset.QP, charset.QP)
         if plain:
             if body:
-                body.attach(MIMEText(plain, 'plain', _charset='utf-8'))
+                body.attach(MIMEText(plain, 'plain', _charset='utf-8',
+                        policy=cls._get_policy()))
             else:
-                message.attach(MIMEText(plain, 'plain', _charset='utf-8'))
+                message.attach(MIMEText(plain, 'plain', _charset='utf-8',
+                        policy=cls._get_policy()))
         if html:
             if body:
-                body.attach(MIMEText(html, 'html', _charset='utf-8'))
+                body.attach(MIMEText(html, 'html', _charset='utf-8',
+                        policy=cls._get_policy()))
             else:
-                message.attach(MIMEText(html, 'html', _charset='utf-8'))
+                message.attach(MIMEText(html, 'html', _charset='utf-8',
+                        policy=cls._get_policy()))
         if body:
             message.attach(body)
 
@@ -262,7 +273,8 @@ class Template(ModelSQL, ModelView):
                     content_type or 'application/octet-stream'
                     ).split('/', 1)
 
-                attachment = MIMEBase(maintype, subtype)
+                attachment = MIMEBase(maintype, subtype,
+                    policy=cls._get_policy())
                 attachment.set_payload(data)
                 encoders.encode_base64(attachment)
                 attachment.add_header(
@@ -385,7 +397,7 @@ class Template(ModelSQL, ModelView):
                 content_type or 'application/octet-stream'
                 ).split('/', 1)
 
-            attachment = MIMEBase(maintype, subtype)
+            attachment = MIMEBase(maintype, subtype, policy=self._get_policy())
             attachment.set_payload(data)
             encoders.encode_base64(attachment)
             attachment.add_header(
