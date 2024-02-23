@@ -35,8 +35,8 @@ msgid "HTML Body"
 msgstr "HTML Body"
 
 msgctxt "field:electronic.mail.template,in_reply_to:"
-msgid "In Repply To"
-msgstr "In Repply To"
+msgid "In Reply To"
+msgstr "En respuesta a"
 
 msgctxt "field:electronic.mail.template,language:"
 msgid "Language"
@@ -47,8 +47,8 @@ msgid "Mailbox"
 msgstr "Buzón de correo"
 
 msgctxt "field:electronic.mail.template,message_id:"
-msgid "Message-ID"
-msgstr "Modelo"
+msgid "Message ID"
+msgstr "ID del mensaje"
 
 msgctxt "field:electronic.mail.template,model:"
 msgid "Model"
