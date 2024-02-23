@@ -65,8 +65,8 @@ class Template(ModelSQL, ModelView):
     signature = fields.Boolean('Use Signature',
         help='The signature from the User details will be appened to the '
         'mail.')
-    message_id = fields.Char('Message-ID', help='Unique Message Identifier')
-    in_reply_to = fields.Char('In Repply To')
+    message_id = fields.Char('Message ID', help='Unique Message Identifier')
+    in_reply_to = fields.Char('In Reply To')
 
     @staticmethod
     def default_engine():
