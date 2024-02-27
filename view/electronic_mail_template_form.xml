@@ -2,59 +2,58 @@
 <!-- This file is part electronic_mail_template module for Tryton.
 The COPYRIGHT file at the top level of this repository contains the full copyright notices and license terms. -->
 <form>
-    <label name="name"/>
-    <field name="name"/>
-    <label name="model"/>
-    <field name="model"/>
-    <label name="smtp_server"/>
-    <field name="smtp_server"/>
-    <label name="language"/>
-    <field name="language"/>
+    <group colspan="4" col="-1" id="group">
+        <label name="name"/>
+        <field name="name"/>
+        <label name="model"/>
+        <field name="model"/>
+        <label name="smtp_server"/>
+        <field name="smtp_server"/>
+    </group>
     <notebook colspan="4">
         <page string="General" id="general">
-            <group colspan="2" col="2" id="addresses">
+            <group colspan="4" id="block">
+                <label name="language"/>
+                <field name="language"/>
+                <label name="from_"/>
+                <field name="from_"/>
                 <label name="to"/>
                 <field name="to"/>
+                <label name="sender"/>
+                <field name="sender"/>
                 <label name="cc"/>
                 <field name="cc"/>
+                <label name="mailbox"/>
+                <field name="mailbox"/>
                 <label name="bcc"/>
                 <field name="bcc"/>
+                <label name="draft_mailbox"/>
+                <field name="draft_mailbox"/>
                 <label name="message_id"/>
                 <field name="message_id"/>
                 <label name="in_reply_to"/>
                 <field name="in_reply_to"/>
-            </group>
-            <group colspan="2" col="2" id="other_main_info">
-                <label name="from_"/>
-                <field name="from_"/>
-                <label name="sender"/>
-                <field name="sender"/>
-                <label name="mailbox"/>
-                <field name="mailbox"/>
-                <label name="draft_mailbox"/>
-                <field name="draft_mailbox"/>
                 <label name="subject"/>
                 <field name="subject"/>
                 <label name="signature"/>
                 <field name="signature"/>
             </group>
-            <group colspan="2" id="body_text">
+            <group colspan="2" id="plain" height="500">
                 <separator name="plain" colspan="4"/>
-                <field name="plain" colspan="4" height="300"/>
+                <field name="plain" colspan="4" height="500"/>
             </group>
-            <group colspan="2" id="body_html">
+            <group colspan="2" id="html" height="500">
                 <separator name="html" colspan="4"/>
-                <field name="html" colspan="4" height="300"/>
+                <field name="html" colspan="4" height="500"/>
             </group>
         </page>
         <page string="Reports" id="reports">
-            <field name="reports" colspan="4"/>
+            <field name="reports" colspan="4" height="500"/>
         </page>
         <page string="Advanced" id="advanced">
             <label name="engine"/>
             <field name="engine"/>
-            <separator name="triggers" colspan="4"/>
-            <field name="triggers" colspan="4"/>
+            <field name="triggers" colspan="4" height="500"/>
         </page>
     </notebook>
 </form>
