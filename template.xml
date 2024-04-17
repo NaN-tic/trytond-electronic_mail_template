@@ -37,7 +37,7 @@ The COPYRIGHT file at the top level of this repository contains the full copyrig
     </record>
     <record model="ir.rule.group" id="rule_group_read_template">
       <field name="name">Read Email Template</field>
-      <field name="model" search="[('model', '=', 'electronic.mail.template')]"/>
+      <field name="model">electronic.mail.template</field>
       <field name="global_p" eval="True"/>
       <field name="default_p" eval="False"/>
       <field name="perm_read" eval="True"/>

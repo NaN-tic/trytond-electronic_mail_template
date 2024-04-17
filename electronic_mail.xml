@@ -6,8 +6,7 @@ The COPYRIGHT file at the top level of this repository contains the full copyrig
         <record model="ir.model.button" id="electronic_mail_send_mail_button">
           <field name="name">send_mail</field>
           <field name="string">Send Email</field>
-         <field name="model"
-              search="[('model', '=', 'electronic.mail')]"/>
+          <field name="model">electronic.mail</field>
     </record>
     </data>
 </tryton>
