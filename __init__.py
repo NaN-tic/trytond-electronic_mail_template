@@ -2,17 +2,20 @@
 # The COPYRIGHT file at the top level of this repository contains
 # the full copyright notices and license terms.
 from trytond.pool import Pool
+from . import attachment
 from . import template
 from . import electronic_mail
 from . import trigger
 from . import report
-
+from . import user
 
 def register():
     Pool.register(
+        attachment.Attachment,
         electronic_mail.ElectronicMail,
         report.ActionReport,
         template.Template,
         template.TemplateReport,
         trigger.Trigger,
+        user.User,
         module='electronic_mail_template', type_='model')
