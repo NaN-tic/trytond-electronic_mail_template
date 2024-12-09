@@ -58,9 +58,13 @@ class ElectronicMail(metaclass=PoolMeta):
 
         to_send = []
         for mail in mails:
+            cls.lock([mail])
+            # Given that the lock (which is a SELECT FOR UPDAT NOWAIT) guarantees that no concurrent
+            # process is updating it, we must read now the flag_send value, and not rely on the value that
+            # may be in the cache of the object before the lock, which could have an older value.
+            mail = cls(mail.id)
             if mail.flag_send:
                 continue
-
             if not mail.mail_file:
                 raise UserError(gettext(
                     'electronic_mail_template.smtp_server_default'))
@@ -117,10 +121,6 @@ class ElectronicMail(metaclass=PoolMeta):
             if not cls.validate_emails(recipients, raise_exception=False):
                 to_draft.extend(([mail], {'mailbox': mail_draft_mailbox}))
                 continue
-
-            # lock before we try to send it because there may be concurrent
-            # process aiming to send them
-            cls.lock([mail])
 
             mail_smtp_server.send_mail(mail.from_, recipients, mail.mail_file)
             if not mail.flag_send:
