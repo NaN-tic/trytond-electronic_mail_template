@@ -26,8 +26,10 @@ class ElectronicMail(metaclass=PoolMeta):
         cls._buttons.update({
                 'send_mail': {
                     'invisible': (
+                        (
                         Bool(Eval('body_plain') == '') &
-                        Bool(Eval('body_html') == '')
+                        Bool(Eval('body_html') == '')) |
+                        Eval('flag_send')
                         ),
                     },
                 })
@@ -54,10 +56,25 @@ class ElectronicMail(metaclass=PoolMeta):
             raise UserError(gettext(
                 'electronic_mail_template.smtp_server_default'))
 
-        with Transaction().set_context(
-                queue_name=QUEUE_NAME,
-                queue_scheduled_at=config.send_email_after):
-            cls.__queue__._send_mail(mails)
+        to_send = []
+        for mail in mails:
+            if mail.flag_send:
+                continue
+
+            if not mail.mail_file:
+                raise UserError(gettext(
+                    'electronic_mail_template.smtp_server_default'))
+
+            recipients = recipients_from_fields(mail)
+            # validate_emails raise UserError or return ''
+            if cls.validate_emails(recipients):
+                to_send.append(mail)
+
+        for mail in to_send:
+            with Transaction().set_context(
+                    queue_name=QUEUE_NAME,
+                    queue_scheduled_at=config.send_email_after):
+                cls.__queue__._send_mail([mail])
 
     @classmethod
     def _send_mail(cls, mails):
@@ -82,20 +99,28 @@ class ElectronicMail(metaclass=PoolMeta):
 
             recipients = recipients_from_fields(mail)
 
-            mail_smtp_server = (mail.template.smtp_server or smtp_server
-                if mail.template else smtp_server)
-            mail_draft_mailbox = (mail.template.draft_mailbox or draft_mailbox
-                if mail.template else draft_mailbox)
+            mail_smtp_server = (mail.template.smtp_server if mail.template
+                else smtp_server)
+            mail_draft_mailbox = (mail.template.draft_mailbox if mail.template
+                else draft_mailbox)
 
             if not mail_smtp_server or not mail_draft_mailbox:
-                logger.warning(
-                    'Missing default SMTP server or Draft Mailbox mail ID: %s' % mail.id)
+                if not mail_smtp_server:
+                    logger.warning(
+                        'Missing default SMTP server mail ID: %s' % mail.id)
+                if not mail_smtp_server:
+                    logger.warning(
+                        'Missing default Mailbox mail ID: %s' % mail.id)
                 continue
 
             # Validate recipients to send or move email to draft mailbox
             if not cls.validate_emails(recipients, raise_exception=False):
                 to_draft.extend(([mail], {'mailbox': mail_draft_mailbox}))
                 continue
+
+            # lock before we try to send it because there may be concurrent
+            # process aiming to send them
+            cls.lock([mail])
 
             mail_smtp_server.send_mail(mail.from_, recipients, mail.mail_file)
             if not mail.flag_send:
