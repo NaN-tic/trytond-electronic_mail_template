@@ -1,13 +1,17 @@
 # This file is part electronic_mail_template module for Tryton.
 # The COPYRIGHT file at the top level of this repository contains
 # the full copyright notices and license terms.
+from trytond.config import config
 from trytond.model import ModelView, fields
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval, Bool
 from trytond.i18n import gettext
 from trytond.exceptions import UserError
+from trytond.transaction import Transaction
 from trytond.modules.electronic_mail_template.tools import (
     recipients_from_fields)
+
+QUEUE_NAME = config.get('electronic_mail', 'queue_name', default='default')
 
 
 class ElectronicMail(metaclass=PoolMeta):
@@ -36,12 +40,10 @@ class ElectronicMail(metaclass=PoolMeta):
     def send_mail(cls, mails):
         pool = Pool()
         Configuration = pool.get('electronic.mail.configuration')
-        ElectronicMail = pool.get('electronic.mail')
         SMTP = pool.get('smtp.server')
 
         config = Configuration(1)
 
-        draft_mailbox = config.draft
         smtp_servers = SMTP.search([
                 ('state', '=', 'done'),
                 ('default', '=', True),
@@ -52,7 +54,18 @@ class ElectronicMail(metaclass=PoolMeta):
             raise UserError(gettext(
                 'electronic_mail_template.smtp_server_default'))
 
-        cls.lock(mails)
+        with Transaction().set_context(
+                queue_name=QUEUE_NAME,
+                queue_scheduled_at=config.send_email_after):
+            cls.__queue__._send_mail(mails, smtp_server=smtp_server)
+
+    @classmethod
+    def _send_mail(cls, mails, smtp_server=None):
+        pool = Pool()
+        Configuration = pool.get('electronic.mail.configuration')
+
+        config = Configuration(1)
+        draft_mailbox = config.draft
 
         to_flag_send = []
         to_draft = []
@@ -67,6 +80,9 @@ class ElectronicMail(metaclass=PoolMeta):
             mail_draft_mailbox = (mail.template.draft_mailbox or draft_mailbox
                 if mail.template else draft_mailbox)
 
+            if not mail_smtp_server:
+                continue
+
             # Validate recipients to send or move email to draft mailbox
             if not ElectronicMail.validate_emails(recipients):
                 to_draft.extend(([mail], {'mailbox': mail_draft_mailbox}))
@@ -77,7 +93,7 @@ class ElectronicMail(metaclass=PoolMeta):
                 to_flag_send.append(mail)
 
         if to_flag_send:
-            ElectronicMail.write(to_flag_send, {'flag_send': True})
+            cls.write(to_flag_send, {'flag_send': True})
 
         if to_draft:
-            ElectronicMail.write(*to_draft)
+            cls.write(*to_draft)
