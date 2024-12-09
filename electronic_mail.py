@@ -1,6 +1,7 @@
 # This file is part electronic_mail_template module for Tryton.
 # The COPYRIGHT file at the top level of this repository contains
 # the full copyright notices and license terms.
+import logging
 from trytond.config import config
 from trytond.model import ModelView, fields
 from trytond.pool import Pool, PoolMeta
@@ -12,6 +13,7 @@ from trytond.modules.electronic_mail_template.tools import (
     recipients_from_fields)
 
 QUEUE_NAME = config.get('electronic_mail', 'queue_name', default='default')
+logger = logging.getLogger(__name__)
 
 
 class ElectronicMail(metaclass=PoolMeta):
@@ -48,24 +50,29 @@ class ElectronicMail(metaclass=PoolMeta):
                 ('state', '=', 'done'),
                 ('default', '=', True),
                 ], limit=1)
-        if smtp_servers:
-            smtp_server, = smtp_servers
-        else:
+        if not smtp_servers:
             raise UserError(gettext(
                 'electronic_mail_template.smtp_server_default'))
 
         with Transaction().set_context(
                 queue_name=QUEUE_NAME,
                 queue_scheduled_at=config.send_email_after):
-            cls.__queue__._send_mail(mails, smtp_server=smtp_server)
+            cls.__queue__._send_mail(mails)
 
     @classmethod
-    def _send_mail(cls, mails, smtp_server=None):
+    def _send_mail(cls, mails):
         pool = Pool()
         Configuration = pool.get('electronic.mail.configuration')
+        SMTP = pool.get('smtp.server')
 
         config = Configuration(1)
         draft_mailbox = config.draft
+
+        smtp_servers = SMTP.search([
+                ('state', '=', 'done'),
+                ('default', '=', True),
+                ], limit=1)
+        smtp_server = smtp_servers[0] if smtp_servers else None
 
         to_flag_send = []
         to_draft = []
@@ -80,11 +87,13 @@ class ElectronicMail(metaclass=PoolMeta):
             mail_draft_mailbox = (mail.template.draft_mailbox or draft_mailbox
                 if mail.template else draft_mailbox)
 
-            if not mail_smtp_server:
+            if not mail_smtp_server or not mail_draft_mailbox:
+                logger.warning(
+                    'Missing default SMTP server or Draft Mailbox mail ID: %s' % mail.id)
                 continue
 
             # Validate recipients to send or move email to draft mailbox
-            if not ElectronicMail.validate_emails(recipients):
+            if not cls.validate_emails(recipients, raise_exception=False):
                 to_draft.extend(([mail], {'mailbox': mail_draft_mailbox}))
                 continue
 
