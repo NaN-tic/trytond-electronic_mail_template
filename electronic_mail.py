@@ -59,7 +59,7 @@ class ElectronicMail(metaclass=PoolMeta):
         to_send = []
         for mail in mails:
             cls.lock([mail])
-            # Given that the lock (which is a SELECT FOR UPDAT NOWAIT) guarantees that no concurrent
+            # Given that the lock (which is a SELECT FOR UPDATE NOWAIT) guarantees that no concurrent
             # process is updating it, we must read now the flag_send value, and not rely on the value that
             # may be in the cache of the object before the lock, which could have an older value.
             mail = cls(mail.id)
