@@ -12,7 +12,7 @@ from trytond.transaction import Transaction
 from trytond.modules.electronic_mail_template.tools import (
     recipients_from_fields)
 
-PRODUCTION_ENV = config.getboolean('nantic_connection', 'production', default=False)
+PRODUCTION_ENV = config.getboolean('database', 'production', default=False)
 QUEUE_NAME = config.get('electronic_mail', 'queue_name', default='default')
 logger = logging.getLogger(__name__)
 
