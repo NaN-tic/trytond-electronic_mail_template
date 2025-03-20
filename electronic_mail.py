@@ -12,6 +12,7 @@ from trytond.transaction import Transaction
 from trytond.modules.electronic_mail_template.tools import (
     recipients_from_fields)
 
+PRODUCTION_ENV = config.getboolean('nantic_connection', 'production', default=False)
 QUEUE_NAME = config.get('electronic_mail', 'queue_name', default='default')
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,10 @@ class ElectronicMail(metaclass=PoolMeta):
         pool = Pool()
         Configuration = pool.get('electronic.mail.configuration')
         SMTP = pool.get('smtp.server')
+
+        if not PRODUCTION_ENV:
+            logger.warning('Production mode is not enabled.')
+            return
 
         config = Configuration(1)
 
