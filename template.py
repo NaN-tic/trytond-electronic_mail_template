@@ -170,11 +170,14 @@ class Template(ModelSQL, ModelView):
         return policy.compat32.clone(linesep='\r\n', raise_on_defect=True)
 
     @classmethod
-    def render(cls, template, record, values, render_report=True):
+    def render(cls, template, record, values, render_report=True,
+            extra_attachments=None):
         '''Renders the template and returns as email object
         :param template: Browse Record of the template
         :param record: Browse Record of the record on which the template
             is to generate the data on
+        :param extra_attachments: A dictionary with 2 keys 'filename' and
+            'data' to attach external documents.
         :return: 'email.message.Message' instance
         '''
         # It is hard to write correct e-mails even using the email module.
@@ -275,6 +278,21 @@ class Template(ModelSQL, ModelView):
                 attachment = MIMEBase(maintype, subtype,
                     policy=cls._get_policy())
                 attachment.set_payload(data)
+                encoders.encode_base64(attachment)
+                attachment.add_header(
+                    'Content-Disposition', 'attachment', filename=filename)
+                message.attach(attachment)
+        if extra_attachments:
+            for attach in extra_attachments:
+                filename = attach['name']
+                content_type, _ = mimetypes.guess_type(filename)
+                maintype, subtype = (
+                    content_type or 'application/octet-stream'
+                    ).split('/', 1)
+
+                attachment = MIMEBase(maintype, subtype,
+                    policy=cls._get_policy())
+                attachment.set_payload(attach['data'])
                 encoders.encode_base64(attachment)
                 attachment.add_header(
                     'Content-Disposition', 'attachment', filename=filename)
