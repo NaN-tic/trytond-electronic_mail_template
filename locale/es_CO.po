@@ -1,19 +1,6 @@
-# 
+#
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
-
-msgctxt "error:electronic.mail.template:"
-msgid "Not valid recipients emails. Check emails in To, Cc or Bcc"
-msgstr ""
-"No hay correos válidos en bandeja. Verifique los correos en A, Cc, Cco"
-
-msgctxt "error:electronic.mail.template:"
-msgid "There are not default SMTP server"
-msgstr "No se ha encontrado ningún servidor SMTP."
-
-msgctxt "error:electronic.mail.template:"
-msgid "Wrong connection to SMTP server. Email have not sent"
-msgstr "No se ha podido conectar al servidor SMTP. Correo no enviado"
 
 msgctxt "field:electronic.mail,body_html:"
 msgid "HTML (BODY)"
