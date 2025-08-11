@@ -6,11 +6,14 @@ this repository contains the full copyright notices and license terms. -->
         <record model="ir.message" id="recipients_error">
             <field name="text">Not valid recipients emails. Check emails in To, Cc or Bcc</field>
         </record>
-        <record model="ir.message" id="smtp_server_default">
-            <field name="text">There are not default SMTP server</field>
+        <record model="ir.message" id="msg_smtp_server_default">
+            <field name="text">There is no default SMTP server</field>
         </record>
         <record model="ir.message" id="generate_template_exception">
             <field name="text">An Exception Ocurred: %(error)s</field>
+        </record>
+        <record model="ir.message" id="msg_missing_mail_file">
+            <field name="text">Could not send e-mail "%(email)s" due to missing Mail File</field>
         </record>
     </data>
 </tryton>

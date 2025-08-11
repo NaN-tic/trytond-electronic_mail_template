@@ -54,7 +54,7 @@ class ElectronicMail(metaclass=PoolMeta):
                 ], limit=1)
         if not smtp_servers:
             raise UserError(gettext(
-                'electronic_mail_template.smtp_server_default'))
+                'electronic_mail_template.msg_smtp_server_default'))
 
         to_send = []
         for mail in mails:
@@ -67,7 +67,8 @@ class ElectronicMail(metaclass=PoolMeta):
                 continue
             if not mail.mail_file:
                 raise UserError(gettext(
-                    'electronic_mail_template.smtp_server_default'))
+                        'electronic_mail_template.msg_smtp_server_default',
+                        email=mail.rec_name))
 
             recipients = recipients_from_fields(mail)
             # validate_emails raise UserError or return ''
