@@ -1,6 +1,17 @@
 #
+# albert, 2025.
 msgid ""
-msgstr "Content-Type: text/plain; charset=utf-8\n"
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Last-Translator: albert\n"
+"PO-Revision-Date: 2025-08-11 10:31+0200\n"
+"Project-Id-Version: \n"
+"Language-Team: Catalan <>\n"
+"Language: ca_ES\n"
+"Content-Transfer-Encoding: 8bit\n"
+"MIME-Version: 1.0\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Lokalize 22.12.3\n"
 
 msgctxt "field:electronic.mail,flag_send:"
 msgid "Sent"
@@ -142,15 +153,21 @@ msgctxt "model:ir.message,text:generate_template_exception"
 msgid "An Exception Ocurred: %(error)s"
 msgstr "S'ha produït una excepció: %(error)s"
 
+msgctxt "model:ir.message,text:msg_missing_mail_file"
+msgid "Could not send e-mail \"%(email)s\" due to missing Mail File"
+msgstr ""
+"No s'ha pogut enviar el correu electrònic \"%(email)s\" perquè falta el "
+"fitxer del correu."
+
+msgctxt "model:ir.message,text:msg_smtp_server_default"
+msgid "There is no default SMTP server"
+msgstr "No hi ha cap servidor SMTP per defecte"
+
 msgctxt "model:ir.message,text:recipients_error"
 msgid "Not valid recipients emails. Check emails in To, Cc or Bcc"
 msgstr ""
 "No són vàlids els correus electrònics dels destinataris. Consultar correus "
 "electrònics en A, CC o Bcc."
-
-msgctxt "model:ir.message,text:smtp_server_default"
-msgid "There are not default SMTP server"
-msgstr "No hi ha un servidor SMTP per defecte"
 
 msgctxt "model:ir.model.button,string:electronic_mail_send_mail_button"
 msgid "Send Email"
