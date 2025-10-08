@@ -8,7 +8,7 @@ from trytond.pool import PoolMeta
 class ActionReport(metaclass=PoolMeta):
     "Action report"
     __name__ = 'ir.action.report'
-    file_name = fields.Char('File Name Pattern', translate=True,
+    file_name = fields.Char('Email File Name Pattern', translate=True,
         help='File name e-mail attachment without extension. '
         'with a syntax according to the engine that will be used in the template. '
         'eg. sale_${record.reference}')

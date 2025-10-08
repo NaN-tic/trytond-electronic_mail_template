@@ -1,17 +1,6 @@
 #
-# albert, 2025.
 msgid ""
-msgstr ""
-"Content-Type: text/plain; charset=UTF-8\n"
-"Last-Translator: albert\n"
-"PO-Revision-Date: 2025-08-11 10:31+0200\n"
-"Project-Id-Version: \n"
-"Language-Team: Catalan <>\n"
-"Language: ca_ES\n"
-"Content-Transfer-Encoding: 8bit\n"
-"MIME-Version: 1.0\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Lokalize 22.12.3\n"
+msgstr "Content-Type: text/plain; charset=utf-8\n"
 
 msgctxt "field:electronic.mail,flag_send:"
 msgid "Sent"
@@ -110,8 +99,8 @@ msgid "Template"
 msgstr "Plantilla"
 
 msgctxt "field:ir.action.report,file_name:"
-msgid "File Name Pattern"
-msgstr "Nombre informe"
+msgid "Email File Name Pattern"
+msgstr "Email nombre informe"
 
 msgctxt "field:ir.trigger,email_template:"
 msgid "Template"
