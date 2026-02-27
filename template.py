@@ -363,12 +363,7 @@ class Template(ModelSQL, ModelView):
         if template.signature:
             User = Pool().get('res.user')
             user = User(Transaction().user)
-            signature_markdown = None
-            if user.signature:
-                signature_markdown = user.signature
-            elif user.signature_html:
-                signature_markdown = cls._html_to_markdown(
-                    user.signature_html)
+            signature_markdown = user.signature if user.signature else None
             if signature_markdown:
                 if markdown_text:
                     markdown_text = '%s\n\n--\n%s' % (
