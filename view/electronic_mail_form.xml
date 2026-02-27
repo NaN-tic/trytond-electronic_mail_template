@@ -11,12 +11,4 @@ The COPYRIGHT file at the top level of this repository contains the full copyrig
         <label name="template"/>
         <field name="template"/>
     </xpath>
-    <xpath expr="/form/group[@id='content']/notebook/page[@name='body_plain']"
-        position="replace">
-        <page name="body_plain" invisible="1"/>
-    </xpath>
-    <xpath expr="/form/group[@id='content']/notebook/page[@name='body_html']"
-        position="replace">
-        <page name="body_html" invisible="1"/>
-    </xpath>
 </data>
