@@ -3,6 +3,7 @@
 # the full copyright notices and license terms.
 import logging
 import mimetypes
+import tempfile
 import markdown
 from email import encoders, charset
 from email.header import Header
@@ -13,6 +14,7 @@ from email.utils import formatdate, make_msgid
 from email import policy
 from genshi.template import TextTemplate
 from html2text import html2text
+from markitdown import (FileConversionException, MarkItDown, UnsupportedFormatException)
 from sql import Column
 try:
     from jinja2 import Template as Jinja2Template
@@ -108,12 +110,11 @@ class Template(ModelSQL, ModelView):
 
         cursor = Transaction().connection.cursor()
         sql_table = cls.__table__()
-        cls._migrate_markdown_data(cursor, sql_table, has_plain, has_html)
-        cls._migrate_markdown_translations(cursor)
-        cls._migrate_user_signatures(cursor)
+        cls._migrate_content(cursor, sql_table, has_plain, has_html)
 
     @classmethod
-    def _migrate_markdown_data(cls, cursor, sql_table, has_plain, has_html):
+    def _migrate_content(cls, cursor, sql_table, has_plain, has_html):
+        # 1) Template body: plain/html -> markdown (HTML wins)
         markdown_col = Column(sql_table, 'markdown')
         columns = [sql_table.id, markdown_col]
         if has_html:
@@ -138,8 +139,7 @@ class Template(ModelSQL, ModelView):
                         [markdown_col], [markdown_value],
                         where=sql_table.id == row['id']))
 
-    @classmethod
-    def _migrate_markdown_translations(cls, cursor):
+        # 2) Translations: plain/html -> markdown (HTML wins)
         Translation = Pool().get('ir.translation')
         translation = Translation.__table__()
         name_markdown = '%s,markdown' % cls.__name__
@@ -174,8 +174,7 @@ class Template(ModelSQL, ModelView):
                     [name_markdown, new_src, new_value],
                     where=translation.id == row['id']))
 
-    @classmethod
-    def _migrate_user_signatures(cls, cursor):
+        # 3) User signatures: signature_html -> signature (markdown)
         User = Pool().get('res.user')
         table_handler = User.__table_handler__()
         if not (table_handler.column_exist('signature')
@@ -280,6 +279,16 @@ class Template(ModelSQL, ModelView):
     def _html_to_markdown(value):
         if not value:
             return ''
+        converter = MarkItDown()
+        try:
+            with tempfile.NamedTemporaryFile(
+                    mode='w', suffix='.html', encoding='utf-8') as f:
+                f.write(value)
+                f.flush()
+                result = converter.convert(f.name)
+                return result.text_content.replace('\x00', '').strip()
+        except (FileConversionException, UnsupportedFormatException):
+            pass
         return html2text(value, bodywidth=0).strip()
 
     @classmethod
