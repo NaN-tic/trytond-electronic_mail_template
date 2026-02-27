@@ -14,14 +14,18 @@ from email.utils import formatdate, make_msgid
 from email import policy
 from genshi.template import TextTemplate
 from html2text import html2text
-from markitdown import (FileConversionException, MarkItDown, UnsupportedFormatException)
+from markitdown import (FileConversionException, MarkItDown,
+    UnsupportedFormatException)
 from sql import Column
+
+logger = logging.getLogger(__name__)
+
 try:
     from jinja2 import Template as Jinja2Template
     jinja2_loaded = True
 except ImportError:
     jinja2_loaded = False
-    logging.getLogger('electronic_mail_template').error(
+    logger.error(
         'Unable to import jinja2. Install jinja2 package.')
 
 from trytond.config import config
@@ -287,9 +291,11 @@ class Template(ModelSQL, ModelView):
                 f.flush()
                 result = converter.convert(f.name)
                 return result.text_content.replace('\x00', '').strip()
-        except (FileConversionException, UnsupportedFormatException):
-            pass
-        return html2text(value, bodywidth=0).strip()
+        except (FileConversionException, UnsupportedFormatException) as exc:
+            logger.error(
+                'MarkItDown conversion error while processing HTML content: %s',
+                exc, exc_info=True)
+        return ''
 
     @classmethod
     def _markdown_to_html(cls, value):
