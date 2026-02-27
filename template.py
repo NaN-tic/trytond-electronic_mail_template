@@ -99,43 +99,48 @@ class Template(ModelSQL, ModelView):
         table_handler = cls.__table_handler__(module_name)
         has_plain = table_handler.column_exist('plain')
         has_html = table_handler.column_exist('html')
+        has_markdown = table_handler.column_exist('markdown')
 
         super().__register__(module_name)
 
-        if not (has_plain or has_html):
+        if not (has_plain or has_html) or has_markdown:
             return
 
         cursor = Transaction().connection.cursor()
         sql_table = cls.__table__()
+        cls._migrate_markdown_data(cursor, sql_table, has_plain, has_html)
+        cls._migrate_markdown_translations(cursor)
+        cls._migrate_user_signatures(cursor)
+
+    @classmethod
+    def _migrate_markdown_data(cls, cursor, sql_table, has_plain, has_html):
         markdown_col = Column(sql_table, 'markdown')
         columns = [sql_table.id, markdown_col]
-        html_col = None
-        plain_col = None
         if has_html:
-            html_col = Column(sql_table, 'html')
-            columns.append(html_col)
+            columns.append(Column(sql_table, 'html'))
         if has_plain:
-            plain_col = Column(sql_table, 'plain')
-            columns.append(plain_col)
+            columns.append(Column(sql_table, 'plain'))
 
         cursor.execute(*sql_table.select(*columns))
         rows = list(cursor_dict(cursor))
         for row in rows:
             if row.get('markdown'):
                 continue
-            source_html = row.get('html') if has_html else None
-            source_plain = row.get('plain') if has_plain else None
+            source_html = (row.get('html') if has_html else None) or ''
+            source_plain = (row.get('plain') if has_plain else None) or ''
+            source_html = source_html.strip()
             if source_html:
                 markdown_value = cls._html_to_markdown(source_html)
             else:
-                markdown_value = source_plain or ''
+                markdown_value = source_plain
             if markdown_value:
                 cursor.execute(*sql_table.update(
                         [markdown_col], [markdown_value],
                         where=sql_table.id == row['id']))
 
-        pool = Pool()
-        Translation = pool.get('ir.translation')
+    @classmethod
+    def _migrate_markdown_translations(cls, cursor):
+        Translation = Pool().get('ir.translation')
         translation = Translation.__table__()
         name_markdown = '%s,markdown' % cls.__name__
         name_html = '%s,html' % cls.__name__
@@ -169,10 +174,29 @@ class Template(ModelSQL, ModelView):
                     [name_markdown, new_src, new_value],
                     where=translation.id == row['id']))
 
-        if has_plain:
-            table_handler.drop_column('plain')
-        if has_html:
-            table_handler.drop_column('html')
+    @classmethod
+    def _migrate_user_signatures(cls, cursor):
+        User = Pool().get('res.user')
+        table_handler = User.__table_handler__()
+        if not (table_handler.column_exist('signature')
+                and table_handler.column_exist('signature_html')):
+            return
+        user_table = User.__table__()
+        cursor.execute(*user_table.select(
+                user_table.id, user_table.signature,
+                user_table.signature_html))
+        rows = list(cursor_dict(cursor))
+        for row in rows:
+            if row.get('signature'):
+                continue
+            signature_html = (row.get('signature_html') or '').strip()
+            if not signature_html:
+                continue
+            signature_markdown = cls._html_to_markdown(signature_html)
+            if signature_markdown:
+                cursor.execute(*user_table.update(
+                        [user_table.signature], [signature_markdown],
+                        where=user_table.id == row['id']))
 
     def eval(self, expression, record):
         '''Evaluates the given :attr:expression
