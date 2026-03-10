@@ -315,6 +315,7 @@ class Template(ModelSQL, ModelView):
         '''
         pool = Pool()
         ActionReport = pool.get('ir.action.report')
+        Lang = pool.get('ir.lang')
 
         if isinstance(record, list):
             ids = [r.id for r in record]
@@ -326,9 +327,20 @@ class Template(ModelSQL, ModelView):
         if template.language:
             lang = template.eval(template.language, record) or lang
 
+        html_report_language = None
+        if lang:
+            langs = Lang.search([('code', '=', lang)], limit=1)
+            html_report_language = langs[0] if langs else None
+
         reports = []
         for report_action in template.reports:
-            with Transaction().set_context(language=lang):
+            context = {'language': lang}
+            if html_report_language:
+                context.update({
+                    'html_report_language': html_report_language,
+                    'report_lang': html_report_language.code,
+                    })
+            with Transaction().set_context(**context):
                 report_action = ActionReport(report_action.id)
                 report = Pool().get(report_action.report_name, type='report')
                 report_execute = report.execute(ids, {
