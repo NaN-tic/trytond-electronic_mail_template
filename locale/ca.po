@@ -41,9 +41,9 @@ msgctxt "field:electronic.mail.template,from_:"
 msgid "From"
 msgstr "Desde"
 
-msgctxt "field:electronic.mail.template,html:"
-msgid "HTML Body"
-msgstr "HTML Body"
+msgctxt "field:electronic.mail.template,markdown:"
+msgid "Markdown Body"
+msgstr "Cos Markdown"
 
 msgctxt "field:electronic.mail.template,in_reply_to:"
 msgid "In Reply To"
@@ -68,10 +68,6 @@ msgstr "Model"
 msgctxt "field:electronic.mail.template,name:"
 msgid "Name"
 msgstr "Nom"
-
-msgctxt "field:electronic.mail.template,plain:"
-msgid "Plain Text Body"
-msgstr "Cos text pla"
 
 msgctxt "field:electronic.mail.template,reports:"
 msgid "Reports"

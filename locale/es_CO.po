@@ -2,14 +2,6 @@
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
-msgctxt "field:electronic.mail,body_html:"
-msgid "HTML (BODY)"
-msgstr "HTML (BODY)"
-
-msgctxt "field:electronic.mail,body_plain:"
-msgid "Plain Text (BODY)"
-msgstr "Texto plano (BODY)"
-
 msgctxt "field:electronic.mail,flag_send:"
 msgid "Sent"
 msgstr "Enviado"
@@ -42,9 +34,9 @@ msgctxt "field:electronic.mail.template,from_:"
 msgid "From"
 msgstr "Desde"
 
-msgctxt "field:electronic.mail.template,html:"
-msgid "HTML Body"
-msgstr "HTML Body"
+msgctxt "field:electronic.mail.template,markdown:"
+msgid "Markdown Body"
+msgstr "Cuerpo Markdown"
 
 msgctxt "field:electronic.mail.template,id:"
 msgid "ID"
@@ -73,10 +65,6 @@ msgstr "Modelo"
 msgctxt "field:electronic.mail.template,name:"
 msgid "Name"
 msgstr "Nombre"
-
-msgctxt "field:electronic.mail.template,plain:"
-msgid "Plain Text Body"
-msgstr "Texto plano cuerpo"
 
 msgctxt "field:electronic.mail.template,rec_name:"
 msgid "Name"
