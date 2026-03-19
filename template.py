@@ -3,6 +3,8 @@
 # the full copyright notices and license terms.
 import logging
 import mimetypes
+import tempfile
+import markdown
 from email import encoders, charset
 from email.header import Header
 from email.mime.multipart import MIMEMultipart
@@ -11,12 +13,19 @@ from email.mime.base import MIMEBase
 from email.utils import formatdate, make_msgid
 from email import policy
 from genshi.template import TextTemplate
+from html2text import html2text
+from markitdown import (FileConversionException, MarkItDown,
+    UnsupportedFormatException)
+from sql import Column
+
+logger = logging.getLogger(__name__)
+
 try:
     from jinja2 import Template as Jinja2Template
     jinja2_loaded = True
 except ImportError:
     jinja2_loaded = False
-    logging.getLogger('electronic_mail_template').error(
+    logger.error(
         'Unable to import jinja2. Install jinja2 package.')
 
 from trytond.config import config
@@ -28,6 +37,7 @@ from trytond.exceptions import UserError
 from trytond.transaction import Transaction
 from trytond.modules.electronic_mail_template.tools import unaccent
 from trytond.report import Report
+from trytond.tools import cursor_dict
 
 QUEUE_NAME = config.get('electronic_mail', 'queue_name', default='default')
 
@@ -52,8 +62,7 @@ class Template(ModelSQL, ModelView):
         required=True)
     language = fields.Char('Language', help=('Expression to find the ISO '
         'langauge code'))
-    plain = fields.Text('Plain Text Body', translate=True)
-    html = fields.Text('HTML Body', translate=True)
+    markdown = fields.Text('Markdown Body', translate=True)
     reports = fields.Many2Many('electronic.mail.template.ir.action.report',
         'template', 'report', 'Reports')
     engine = fields.Selection('get_engines', 'Engine', required=True)
@@ -90,6 +99,107 @@ class Template(ModelSQL, ModelView):
     def check_xml_record(cls, records, values):
         '''It should be possible to overwrite templates'''
         return True
+
+    @classmethod
+    def __register__(cls, module_name):
+        table_handler = cls.__table_handler__(module_name)
+        has_plain = table_handler.column_exist('plain')
+        has_html = table_handler.column_exist('html')
+        has_markdown = table_handler.column_exist('markdown')
+
+        super().__register__(module_name)
+
+        if not (has_plain or has_html) or has_markdown:
+            return
+
+        cursor = Transaction().connection.cursor()
+        sql_table = cls.__table__()
+        cls._migrate_content(cursor, sql_table, has_plain, has_html)
+
+    @classmethod
+    def _migrate_content(cls, cursor, sql_table, has_plain, has_html):
+        # 1) Template body: plain/html -> markdown (HTML wins)
+        markdown_col = Column(sql_table, 'markdown')
+        columns = [sql_table.id, markdown_col]
+        if has_html:
+            columns.append(Column(sql_table, 'html'))
+        if has_plain:
+            columns.append(Column(sql_table, 'plain'))
+
+        cursor.execute(*sql_table.select(*columns))
+        rows = list(cursor_dict(cursor))
+        for row in rows:
+            if row.get('markdown'):
+                continue
+            source_html = (row.get('html') if has_html else None) or ''
+            source_plain = (row.get('plain') if has_plain else None) or ''
+            source_html = source_html.strip()
+            if source_html:
+                markdown_value = cls._html_to_markdown(source_html)
+            else:
+                markdown_value = source_plain
+            if markdown_value:
+                cursor.execute(*sql_table.update(
+                        [markdown_col], [markdown_value],
+                        where=sql_table.id == row['id']))
+
+        # 2) Translations: plain/html -> markdown (HTML wins)
+        Translation = Pool().get('ir.translation')
+        translation = Translation.__table__()
+        name_markdown = '%s,markdown' % cls.__name__
+        name_html = '%s,html' % cls.__name__
+        name_plain = '%s,plain' % cls.__name__
+
+        cursor.execute(*translation.select(
+                translation.id, translation.name, translation.lang,
+                translation.res_id, translation.value, translation.src,
+                where=(translation.type == 'field')
+                & (translation.name.in_([name_html, name_plain]))))
+        rows = list(cursor_dict(cursor))
+        grouped = {}
+        for row in rows:
+            key = (row['res_id'], row['lang'])
+            if key not in grouped or row['name'] == name_html:
+                grouped[key] = row
+        keep_ids = {row['id'] for row in grouped.values()}
+        delete_ids = [row['id'] for row in rows if row['id'] not in keep_ids]
+        if delete_ids:
+            cursor.execute(*translation.delete(
+                    where=translation.id.in_(delete_ids)))
+        for row in grouped.values():
+            if row['name'] == name_html:
+                convert = cls._html_to_markdown
+            else:
+                convert = lambda value: value or ''
+            new_src = convert(row['src']) if row['src'] else row['src']
+            new_value = convert(row['value']) if row['value'] else row['value']
+            cursor.execute(*translation.update(
+                    [translation.name, translation.src, translation.value],
+                    [name_markdown, new_src, new_value],
+                    where=translation.id == row['id']))
+
+        # 3) User signatures: signature_html -> signature (markdown)
+        User = Pool().get('res.user')
+        table_handler = User.__table_handler__()
+        if not (table_handler.column_exist('signature')
+                and table_handler.column_exist('signature_html')):
+            return
+        user_table = User.__table__()
+        cursor.execute(*user_table.select(
+                user_table.id, user_table.signature,
+                user_table.signature_html))
+        rows = list(cursor_dict(cursor))
+        for row in rows:
+            if row.get('signature'):
+                continue
+            signature_html = (row.get('signature_html') or '').strip()
+            if not signature_html:
+                continue
+            signature_markdown = cls._html_to_markdown(signature_html)
+            if signature_markdown:
+                cursor.execute(*user_table.update(
+                        [user_table.signature], [signature_markdown],
+                        where=user_table.id == row['id']))
 
     def eval(self, expression, record):
         '''Evaluates the given :attr:expression
@@ -169,6 +279,39 @@ class Template(ModelSQL, ModelView):
         # See https://docs.python.org/3/library/email.policy.html
         return policy.compat32.clone(linesep='\r\n', raise_on_defect=True)
 
+    @staticmethod
+    def _html_to_markdown(value):
+        if not value:
+            return ''
+        converter = MarkItDown()
+        try:
+            with tempfile.NamedTemporaryFile(
+                    mode='w', suffix='.html', encoding='utf-8') as f:
+                f.write(value)
+                f.flush()
+                result = converter.convert(f.name)
+                return result.text_content.replace('\x00', '').strip()
+        except (FileConversionException, UnsupportedFormatException) as exc:
+            logger.error(
+                'MarkItDown conversion error while processing HTML content: %s',
+                exc, exc_info=True)
+        return ''
+
+    @classmethod
+    def _markdown_to_html(cls, value):
+        if not value:
+            return ''
+        return markdown.markdown(value)
+
+    @classmethod
+    def _markdown_to_plain(cls, value):
+        if not value:
+            return ''
+        html = cls._markdown_to_html(value)
+        if not html:
+            return ''
+        return html2text(html, bodywidth=0).strip()
+
     @classmethod
     def render(cls, template, record, values, render_report=True,
             extra_attachments=None):
@@ -213,8 +356,7 @@ class Template(ModelSQL, ModelView):
                 record), 'utf-8').encode()
 
         # HTML & Text Alternate parts
-        plain = template.eval(values['plain'], record)
-        html = template.eval(values['html'], record)
+        markdown_text = template.eval(values['markdown'], record)
         header = """
             <html>
             <head><head>
@@ -224,22 +366,22 @@ class Template(ModelSQL, ModelView):
             </body>
             </html>
             """
-        if html:
-            html = "%s%s" % (header, html)
         if template.signature:
             User = Pool().get('res.user')
             user = User(Transaction().user)
-            if html and user.signature_html:
-                signature = user.signature_html
-                html = '%s<br>--<br>%s' % (html, signature)
-            if plain and user.signature:
-                signature = user.signature
-                plain = '%s\n--\n%s' % (plain, signature)
-                if html and not user.signature_html:
-                    html = '%s<br>--<br>%s' % (html,
-                        signature.replace('\n', '<br>'))
-        if html:
-            html = "%s%s" % (html, footer)
+            signature_markdown = user.signature if user.signature else None
+            if signature_markdown:
+                if markdown_text:
+                    markdown_text = '%s\n\n--\n%s' % (
+                        markdown_text, signature_markdown)
+                else:
+                    markdown_text = '--\n%s' % signature_markdown
+
+        html_body = cls._markdown_to_html(markdown_text)
+        plain = cls._markdown_to_plain(markdown_text)
+        html = ''
+        if html_body:
+            html = "%s%s%s" % (header, html_body, footer)
         body = None
         if html and plain:
             body = MIMEMultipart('alternative', policy=cls._get_policy())
@@ -382,7 +524,7 @@ class Template(ModelSQL, ModelView):
 
             values = {'template': template}
             tmpl_fields = ('from_', 'sender', 'to', 'cc', 'bcc', 'subject',
-                'message_id', 'in_reply_to', 'plain', 'html')
+                'message_id', 'in_reply_to', 'markdown')
             for field_name in tmpl_fields:
                 values[field_name] = getattr(template, field_name)
 
