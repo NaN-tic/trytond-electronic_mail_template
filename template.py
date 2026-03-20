@@ -105,11 +105,10 @@ class Template(ModelSQL, ModelView):
         table_handler = cls.__table_handler__(module_name)
         has_plain = table_handler.column_exist('plain')
         has_html = table_handler.column_exist('html')
-        has_markdown = table_handler.column_exist('markdown')
 
         super().__register__(module_name)
 
-        if not (has_plain or has_html) or has_markdown:
+        if not (has_plain or has_html):
             return
 
         cursor = Transaction().connection.cursor()
@@ -153,7 +152,7 @@ class Template(ModelSQL, ModelView):
         cursor.execute(*translation.select(
                 translation.id, translation.name, translation.lang,
                 translation.res_id, translation.value, translation.src,
-                where=(translation.type == 'field')
+                where=(translation.type == 'model')
                 & (translation.name.in_([name_html, name_plain]))))
         rows = list(cursor_dict(cursor))
         grouped = {}
@@ -457,7 +456,6 @@ class Template(ModelSQL, ModelView):
         '''
         pool = Pool()
         ActionReport = pool.get('ir.action.report')
-        Lang = pool.get('ir.lang')
 
         if isinstance(record, list):
             ids = [r.id for r in record]
@@ -469,20 +467,9 @@ class Template(ModelSQL, ModelView):
         if template.language:
             lang = template.eval(template.language, record) or lang
 
-        html_report_language = None
-        if lang:
-            langs = Lang.search([('code', '=', lang)], limit=1)
-            html_report_language = langs[0] if langs else None
-
         reports = []
         for report_action in template.reports:
-            context = {'language': lang}
-            if html_report_language:
-                context.update({
-                    'html_report_language': html_report_language,
-                    'report_lang': html_report_language.code,
-                    })
-            with Transaction().set_context(**context):
+            with Transaction().set_context(language=lang):
                 report_action = ActionReport(report_action.id)
                 report = Pool().get(report_action.report_name, type='report')
                 report_execute = report.execute(ids, {
