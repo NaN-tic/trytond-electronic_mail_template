@@ -105,10 +105,11 @@ class Template(ModelSQL, ModelView):
         table_handler = cls.__table_handler__(module_name)
         has_plain = table_handler.column_exist('plain')
         has_html = table_handler.column_exist('html')
+        has_markdown = table_handler.column_exist('markdown')
 
         super().__register__(module_name)
 
-        if not (has_plain or has_html):
+        if not (has_plain or has_html) or has_markdown:
             return
 
         cursor = Transaction().connection.cursor()
@@ -177,7 +178,7 @@ class Template(ModelSQL, ModelView):
                     [name_markdown, new_src, new_value],
                     where=translation.id == row['id']))
 
-        # 3) User signatures: signature_html -> signature (markdown)
+        # 3) User signatures: signature_html -> signature (HTML)
         User = Pool().get('res.user')
         table_handler = User.__table_handler__()
         if not (table_handler.column_exist('signature')
@@ -189,16 +190,19 @@ class Template(ModelSQL, ModelView):
                 user_table.signature_html))
         rows = list(cursor_dict(cursor))
         for row in rows:
-            if row.get('signature'):
-                continue
             signature_html = (row.get('signature_html') or '').strip()
             if not signature_html:
                 continue
+            current_signature = (row.get('signature') or '').strip()
             signature_markdown = cls._html_to_markdown(signature_html)
-            if signature_markdown:
-                cursor.execute(*user_table.update(
-                        [user_table.signature], [signature_markdown],
-                        where=user_table.id == row['id']))
+            if current_signature and current_signature not in {
+                    signature_html, signature_markdown}:
+                continue
+            if current_signature == signature_html:
+                continue
+            cursor.execute(*user_table.update(
+                    [user_table.signature], [signature_html],
+                    where=user_table.id == row['id']))
 
     def eval(self, expression, record):
         '''Evaluates the given :attr:expression
@@ -300,7 +304,8 @@ class Template(ModelSQL, ModelView):
     def _markdown_to_html(cls, value):
         if not value:
             return ''
-        return markdown.markdown(value)
+        return markdown.markdown(
+            value, extensions=['fenced_code', 'tables', 'sane_lists'])
 
     @classmethod
     def _markdown_to_plain(cls, value):
@@ -368,7 +373,11 @@ class Template(ModelSQL, ModelView):
         if template.signature:
             User = Pool().get('res.user')
             user = User(Transaction().user)
-            signature_markdown = user.signature if user.signature else None
+            signature_markdown = (user.signature or '').strip()
+            if ('<' in signature_markdown and '>' in signature_markdown):
+                converted_signature = cls._html_to_markdown(signature_markdown)
+                if converted_signature:
+                    signature_markdown = converted_signature
             if signature_markdown:
                 if markdown_text:
                     markdown_text = '%s\n\n--\n%s' % (
@@ -456,6 +465,7 @@ class Template(ModelSQL, ModelView):
         '''
         pool = Pool()
         ActionReport = pool.get('ir.action.report')
+        Lang = pool.get('ir.lang')
 
         if isinstance(record, list):
             ids = [r.id for r in record]
@@ -467,9 +477,20 @@ class Template(ModelSQL, ModelView):
         if template.language:
             lang = template.eval(template.language, record) or lang
 
+        html_report_language = None
+        if lang:
+            langs = Lang.search([('code', '=', lang)], limit=1)
+            html_report_language = langs[0] if langs else None
+
         reports = []
         for report_action in template.reports:
-            with Transaction().set_context(language=lang):
+            context = {'language': lang}
+            if html_report_language:
+                context.update({
+                    'html_report_language': html_report_language,
+                    'report_lang': html_report_language.code,
+                    })
+            with Transaction().set_context(**context):
                 report_action = ActionReport(report_action.id)
                 report = Pool().get(report_action.report_name, type='report')
                 report_execute = report.execute(ids, {
