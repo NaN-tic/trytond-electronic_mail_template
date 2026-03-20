@@ -270,9 +270,14 @@ class Template(ModelSQL, ModelView):
         if not jinja2_loaded or not expression:
             return ''
 
-        template = Jinja2Template(expression)
         template_context = cls.template_context(record)
-        return template.render(template_context)
+        try:
+            template = Jinja2Template(expression)
+            return template.render(template_context)
+        except Exception as message:
+            raise UserError(gettext(
+                'electronic_mail_template.generate_template_exception',
+                error=repr(message)))
 
     @staticmethod
     def _get_policy():
