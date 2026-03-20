@@ -153,7 +153,7 @@ class Template(ModelSQL, ModelView):
         cursor.execute(*translation.select(
                 translation.id, translation.name, translation.lang,
                 translation.res_id, translation.value, translation.src,
-                where=(translation.type == 'field')
+                where=(translation.type == 'model')
                 & (translation.name.in_([name_html, name_plain]))))
         rows = list(cursor_dict(cursor))
         grouped = {}
@@ -190,16 +190,19 @@ class Template(ModelSQL, ModelView):
                 user_table.signature_html))
         rows = list(cursor_dict(cursor))
         for row in rows:
-            if row.get('signature'):
-                continue
             signature_html = (row.get('signature_html') or '').strip()
             if not signature_html:
                 continue
+            current_signature = (row.get('signature') or '').strip()
             signature_markdown = cls._html_to_markdown(signature_html)
-            if signature_markdown:
-                cursor.execute(*user_table.update(
-                        [user_table.signature], [signature_markdown],
-                        where=user_table.id == row['id']))
+            if current_signature and current_signature not in {
+                    signature_html, signature_markdown}:
+                continue
+            if current_signature == signature_html:
+                continue
+            cursor.execute(*user_table.update(
+                    [user_table.signature], [signature_html],
+                    where=user_table.id == row['id']))
 
     def eval(self, expression, record):
         '''Evaluates the given :attr:expression
@@ -301,7 +304,8 @@ class Template(ModelSQL, ModelView):
     def _markdown_to_html(cls, value):
         if not value:
             return ''
-        return markdown.markdown(value)
+        return markdown.markdown(
+            value, extensions=['fenced_code', 'tables', 'sane_lists'])
 
     @classmethod
     def _markdown_to_plain(cls, value):
@@ -369,7 +373,11 @@ class Template(ModelSQL, ModelView):
         if template.signature:
             User = Pool().get('res.user')
             user = User(Transaction().user)
-            signature_markdown = user.signature if user.signature else None
+            signature_markdown = (user.signature or '').strip()
+            if ('<' in signature_markdown and '>' in signature_markdown):
+                converted_signature = cls._html_to_markdown(signature_markdown)
+                if converted_signature:
+                    signature_markdown = converted_signature
             if signature_markdown:
                 if markdown_text:
                     markdown_text = '%s\n\n--\n%s' % (
