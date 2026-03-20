@@ -145,6 +145,8 @@ class ElectronicMailTemplateTestCase(CompanyTestMixin, ModuleTestCase):
                     'fuzzy': False,
                     }])
 
+        table_handler.drop_column('markdown')
+
         Template.__register__('electronic_mail_template')
 
         with Transaction().set_context(language=lang.code):
@@ -169,7 +171,7 @@ class ElectronicMailTemplateTestCase(CompanyTestMixin, ModuleTestCase):
 
 
     @with_transaction()
-    def test_register_repairs_user_signature_to_html_format(self):
+    def test_register_migrates_user_signature_to_html_format(self):
         pool = Pool()
         User = pool.get('res.user')
         Template = pool.get('electronic.mail.template')
@@ -180,10 +182,14 @@ class ElectronicMailTemplateTestCase(CompanyTestMixin, ModuleTestCase):
         user.signature = Template._html_to_markdown(html_signature)
         user.save()
 
+        table_handler = Template.__table_handler__('electronic_mail_template')
+        table_handler.add_column('plain', 'TEXT')
+        table_handler.drop_column('markdown')
+
         Template.__register__('electronic_mail_template')
 
-        repaired_user = User(user.id)
-        self.assertEqual(repaired_user.signature, html_signature)
+        migrated_user = User(user.id)
+        self.assertEqual(migrated_user.signature, html_signature)
 
 
 del ModuleTestCase

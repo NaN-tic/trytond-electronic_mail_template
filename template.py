@@ -178,7 +178,7 @@ class Template(ModelSQL, ModelView):
                     [name_markdown, new_src, new_value],
                     where=translation.id == row['id']))
 
-        # 3) User signatures: signature_html -> signature (HTML)
+        # 3) User signatures: signature_html -> signature (markdown)
         User = Pool().get('res.user')
         table_handler = User.__table_handler__()
         if not (table_handler.column_exist('signature')
