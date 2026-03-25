@@ -21,7 +21,7 @@ from sql import Column
 logger = logging.getLogger(__name__)
 
 try:
-    from jinja2 import Template as Jinja2Template
+    from jinja2 import ChainableUndefined, Template as Jinja2Template
     jinja2_loaded = True
 except ImportError:
     jinja2_loaded = False
@@ -273,7 +273,10 @@ class Template(ModelSQL, ModelView):
         if not jinja2_loaded or not expression:
             return ''
 
-        template = Jinja2Template(expression)
+        template = Jinja2Template(
+            expression,
+            undefined=ChainableUndefined,
+            )
         template_context = cls.template_context(record)
         return template.render(template_context)
 
