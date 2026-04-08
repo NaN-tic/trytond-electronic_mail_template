@@ -76,6 +76,7 @@ class Template(ModelSQL, ModelView):
         'mail.')
     message_id = fields.Char('Message ID', help='Unique Message Identifier')
     in_reply_to = fields.Char('In Reply To')
+    references = fields.Char('References')
 
     @staticmethod
     def default_engine():
@@ -342,6 +343,9 @@ class Template(ModelSQL, ModelView):
         if values.get('in_reply_to'):
             message['In-Reply-To'] = template.eval(values['in_reply_to'],
                 record)
+        if values.get('references'):
+            message['References'] = template.eval(values['references'],
+                record)
         message['From'] = ElectronicMail.validate_emails(
             template.eval(values['from_'], record))
         if values.get('sender'):
@@ -532,7 +536,7 @@ class Template(ModelSQL, ModelView):
 
             values = {'template': template}
             tmpl_fields = ('from_', 'sender', 'to', 'cc', 'bcc', 'subject',
-                'message_id', 'in_reply_to', 'markdown')
+                'message_id', 'in_reply_to', 'references', 'markdown')
             for field_name in tmpl_fields:
                 values[field_name] = getattr(template, field_name)
 
