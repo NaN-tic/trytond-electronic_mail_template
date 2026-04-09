@@ -33,6 +33,8 @@ The COPYRIGHT file at the top level of this repository contains the full copyrig
                 <field name="message_id"/>
                 <label name="in_reply_to"/>
                 <field name="in_reply_to"/>
+                <label name="references"/>
+                <field name="references"/>
                 <label name="subject"/>
                 <field name="subject"/>
                 <label name="signature"/>

@@ -49,6 +49,10 @@ msgctxt "field:electronic.mail.template,in_reply_to:"
 msgid "In Reply To"
 msgstr "En resposta a"
 
+msgctxt "field:electronic.mail.template,references:"
+msgid "References"
+msgstr "Referències"
+
 msgctxt "field:electronic.mail.template,language:"
 msgid "Language"
 msgstr "Idioma"
