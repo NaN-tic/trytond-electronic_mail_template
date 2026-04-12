@@ -63,6 +63,10 @@ class Template(ModelSQL, ModelView):
     language = fields.Char('Language', help=('Expression to find the ISO '
         'langauge code'))
     markdown = fields.Text('Markdown Body', translate=True)
+    plain = fields.Function(fields.Text('Plain Body'),
+        'get_plain', setter='set_plain')
+    html = fields.Function(fields.Text('HTML Body'),
+        'get_html', setter='set_html')
     reports = fields.Many2Many('electronic.mail.template.ir.action.report',
         'template', 'report', 'Reports')
     engine = fields.Selection('get_engines', 'Engine', required=True)
@@ -316,6 +320,28 @@ class Template(ModelSQL, ModelView):
         if not html:
             return ''
         return html2text(html, bodywidth=0).strip()
+
+    def get_plain(self, name):
+        return self._markdown_to_plain(self.markdown)
+
+    def get_html(self, name):
+        return self._markdown_to_html(self.markdown)
+
+    @classmethod
+    def set_plain(cls, templates, name, value):
+        if value is None:
+            return
+        cls.write(templates, {
+                'markdown': value or '',
+                })
+
+    @classmethod
+    def set_html(cls, templates, name, value):
+        if value is None:
+            return
+        cls.write(templates, {
+                'markdown': cls._html_to_markdown(value or ''),
+                })
 
     @classmethod
     def render(cls, template, record, values, render_report=True,
