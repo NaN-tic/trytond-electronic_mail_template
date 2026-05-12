@@ -3,6 +3,7 @@
 # the full copyright notices and license terms.
 import logging
 import mimetypes
+import re
 import tempfile
 import markdown
 from email import encoders, charset
@@ -19,6 +20,10 @@ from markitdown import (FileConversionException, MarkItDown,
 from sql import Column
 
 logger = logging.getLogger(__name__)
+
+_TEMPLATE_EXPRESSION_PATTERN = re.compile(
+    r'(\{\{.*?\}\}|\{%.*?%\}|\$\{.*?\})',
+    re.DOTALL)
 
 try:
     from jinja2 import Template as Jinja2Template
@@ -294,12 +299,23 @@ class Template(ModelSQL, ModelView):
                 f.write(value)
                 f.flush()
                 result = converter.convert(f.name)
-                return result.text_content.replace('\x00', '').strip()
+                text = result.text_content.replace('\x00', '').strip()
+                return Template._unescape_template_expressions(text)
         except (FileConversionException, UnsupportedFormatException) as exc:
             logger.error(
                 'MarkItDown conversion error while processing HTML content: %s',
                 exc, exc_info=True)
         return ''
+
+    @staticmethod
+    def _unescape_template_expressions(value):
+        if not value:
+            return ''
+
+        def replace(match):
+            return match.group(0).replace(r'\_', '_')
+
+        return _TEMPLATE_EXPRESSION_PATTERN.sub(replace, value)
 
     @classmethod
     def _markdown_to_html(cls, value):
