@@ -71,6 +71,37 @@ class ElectronicMailTemplateTestCase(CompanyTestMixin, ModuleTestCase):
         self.assertIn('4. four', plain)
         self.assertIn('* three', plain)
 
+    @with_transaction()
+    def test_html_to_markdown_unescapes_template_expressions(self):
+        Template = Pool().get('electronic.mail.template')
+        value = dedent("""\
+            <p>Dear customer,</p>
+            <p>Invoice {{ record.number }} dated on
+            {{ record.invoice_date and
+            record.invoice_date.strftime('%d/%m/%Y') }} is attached below.</p>
+            <p>Reference: ${record.invoice_date}</p>
+            """)
+
+        markdown = Template._html_to_markdown(value)
+
+        self.assertIn('{{ record.number }}', markdown)
+        self.assertIn('{{ record.invoice_date and', markdown)
+        self.assertIn("record.invoice_date.strftime('%d/%m/%Y') }}", markdown)
+        self.assertIn('${record.invoice_date}', markdown)
+        self.assertNotIn(r'\_', markdown)
+
+    @with_transaction()
+    def test_unescape_template_expressions_keeps_normal_markdown_escaping(self):
+        Template = Pool().get('electronic.mail.template')
+        value = (
+            r'Use customer_name for plain text and '
+            r'{{ record.invoice\_date }} in templates')
+
+        unescaped = Template._unescape_template_expressions(value)
+
+        self.assertIn('customer_name', unescaped)
+        self.assertIn('{{ record.invoice_date }}', unescaped)
+        self.assertNotIn(r'{{ record.invoice\_date }}', unescaped)
 
     @with_transaction()
     def test_register_migrates_translated_html_when_source_is_empty(self):
