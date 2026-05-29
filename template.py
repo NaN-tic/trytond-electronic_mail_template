@@ -43,6 +43,7 @@ from trytond.transaction import Transaction
 from trytond.modules.electronic_mail_template.tools import unaccent
 from trytond.report import Report
 from trytond.tools import cursor_dict
+from simpleeval import simple_eval
 
 QUEUE_NAME = config.get('electronic_mail', 'queue_name', default='default')
 
@@ -248,7 +249,11 @@ class Template(ModelSQL, ModelView):
 
         assert record is not None, 'Record is undefined'
         template_context = cls.template_context(record)
-        return eval(expression, template_context)
+        return simple_eval(
+            expression,
+            names=template_context,
+            functions={k: v for k, v in template_context.items()
+                if callable(v)})
 
     @classmethod
     def _engine_genshi(cls, expression, record):
