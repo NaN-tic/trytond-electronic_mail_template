@@ -18,6 +18,7 @@ from html2text import html2text
 from markitdown import (FileConversionException, MarkItDown,
     UnsupportedFormatException)
 from sql import Column
+from trytond import backend
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,6 @@ from trytond.exceptions import UserError
 from trytond.transaction import Transaction
 from trytond.modules.electronic_mail_template.tools import unaccent
 from trytond.report import Report
-from trytond.tools import cursor_dict
 from simpleeval import simple_eval
 
 QUEUE_NAME = config.get('electronic_mail', 'queue_name', default='default')
@@ -119,7 +119,7 @@ class Template(ModelSQL, ModelView):
         if not (has_plain or has_html) or has_markdown:
             return
 
-        cursor = Transaction().connection.cursor()
+        cursor = Transaction().connection.cursor(row_factory=backend.dict_row)
         sql_table = cls.__table__()
         cls._migrate_content(cursor, sql_table, has_plain, has_html)
 
@@ -134,7 +134,7 @@ class Template(ModelSQL, ModelView):
             columns.append(Column(sql_table, 'plain'))
 
         cursor.execute(*sql_table.select(*columns))
-        rows = list(cursor_dict(cursor))
+        rows = list(cursor)
         for row in rows:
             if row.get('markdown'):
                 continue
@@ -162,7 +162,7 @@ class Template(ModelSQL, ModelView):
                 translation.res_id, translation.value, translation.src,
                 where=(translation.type == 'model')
                 & (translation.name.in_([name_html, name_plain]))))
-        rows = list(cursor_dict(cursor))
+        rows = list(cursor)
         grouped = {}
         for row in rows:
             key = (row['res_id'], row['lang'])
@@ -195,7 +195,7 @@ class Template(ModelSQL, ModelView):
         cursor.execute(*user_table.select(
                 user_table.id, user_table.signature,
                 user_table.signature_html))
-        rows = list(cursor_dict(cursor))
+        rows = list(cursor)
         for row in rows:
             signature_html = (row.get('signature_html') or '').strip()
             if not signature_html:
