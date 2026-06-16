@@ -39,6 +39,14 @@ class ElectronicMail(metaclass=PoolMeta):
         return True
 
     @classmethod
+    def _get_sender_and_recipients(cls, mail):
+        sender = cls.validate_emails(
+            (mail.from_ or '').strip(), raise_exception=False)
+        recipients = [r.strip() for r in recipients_from_fields(mail)
+            if r and r.strip()]
+        return sender, recipients
+
+    @classmethod
     @ModelView.button
     def send_mail(cls, mails):
         pool = Pool()
@@ -72,9 +80,9 @@ class ElectronicMail(metaclass=PoolMeta):
                         'electronic_mail_template.msg_smtp_server_default',
                         email=mail.rec_name))
 
-            recipients = recipients_from_fields(mail)
+            sender, recipients = cls._get_sender_and_recipients(mail)
             # validate_emails raise UserError or return ''
-            if cls.validate_emails(recipients):
+            if sender and cls.validate_emails(recipients):
                 to_send.append(mail)
 
         for mail in to_send:
@@ -104,7 +112,7 @@ class ElectronicMail(metaclass=PoolMeta):
             if not mail.mail_file:
                 continue
 
-            recipients = recipients_from_fields(mail)
+            sender, recipients = cls._get_sender_and_recipients(mail)
 
             mail_smtp_server = (mail.template.smtp_server if mail.template
                 else smtp_server)
@@ -121,11 +129,13 @@ class ElectronicMail(metaclass=PoolMeta):
                 continue
 
             # Validate recipients to send or move email to draft mailbox
-            if not cls.validate_emails(recipients, raise_exception=False):
+            if (not sender
+                    or not cls.validate_emails(
+                        recipients, raise_exception=False)):
                 to_draft.extend(([mail], {'mailbox': mail_draft_mailbox}))
                 continue
 
-            mail_smtp_server.send_mail(mail.from_, recipients, mail.mail_file)
+            mail_smtp_server.send_mail(sender, recipients, mail.mail_file)
             if not mail.flag_send:
                 to_flag_send.append(mail)
 
