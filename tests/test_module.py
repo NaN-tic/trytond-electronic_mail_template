@@ -3,8 +3,10 @@
 # this repository contains the full copyright notices and license terms.
 
 from textwrap import dedent
+from unittest.mock import patch
 
 from sql import Column
+from trytond.modules.company.tests.test_module import create_company, set_company
 from trytond.modules.company.tests import CompanyTestMixin
 from trytond.pool import Pool
 from trytond.tests.test_tryton import ModuleTestCase, with_transaction
@@ -221,6 +223,72 @@ class ElectronicMailTemplateTestCase(CompanyTestMixin, ModuleTestCase):
 
         migrated_user = User(user.id)
         self.assertEqual(migrated_user.signature, html_signature)
+
+    @with_transaction()
+    def test_send_mail_skips_invalid_sender_or_blank_recipient(self):
+        pool = Pool()
+        ConfigurationCompany = pool.get('electronic.mail.configuration.company')
+        Mail = pool.get('electronic.mail')
+        Mailbox = pool.get('electronic.mail.mailbox')
+        SMTPServer = pool.get('smtp.server')
+        mail_table = Mail.__table__()
+        cursor = Transaction().connection.cursor()
+
+        company = create_company()
+        with set_company(company):
+            inbox, draft = Mailbox.create([
+                    {'name': 'Inbox'},
+                    {'name': 'Draft'},
+                    ])
+            ConfigurationCompany.create([{
+                        'company': company.id,
+                        'draft': draft.id,
+                        }])
+            smtp_server, = SMTPServer.create([{
+                        'name': 'SMTP',
+                        'smtp_server': 'smtp.example.com',
+                        'smtp_email': 'support@example.com',
+                        'default': True,
+                        }])
+            SMTPServer.done([smtp_server])
+
+            invalid_sender, blank_recipient = Mail.create([{
+                        'mailbox': inbox.id,
+                        'from_': 'sender@example.com',
+                        'to': 'customer@example.com',
+                        'subject': 'Invalid sender',
+                        'mail_file': b'invalid-sender',
+                        }, {
+                        'mailbox': inbox.id,
+                        'from_': 'sender@example.com',
+                        'to': 'customer@example.com',
+                        'subject': 'Blank recipient',
+                        'mail_file': b'blank-recipient',
+                        }])
+            cursor.execute(*mail_table.update(
+                    columns=[mail_table.from_],
+                    values=['invalid sender'],
+                    where=mail_table.id == invalid_sender.id))
+            cursor.execute(*mail_table.update(
+                    columns=[mail_table.to],
+                    values=['   '],
+                    where=mail_table.id == blank_recipient.id))
+            for cache in Transaction().cache.values():
+                cache.clear()
+
+            with patch.object(SMTPServer, 'send_mail') as send_mail:
+                Mail._send_mail([
+                        Mail(invalid_sender.id),
+                        Mail(blank_recipient.id),
+                        ])
+                send_mail.assert_not_called()
+            for cache in Transaction().cache.values():
+                cache.clear()
+
+            invalid_sender = Mail(invalid_sender.id)
+            blank_recipient = Mail(blank_recipient.id)
+            self.assertFalse(invalid_sender.flag_send)
+            self.assertFalse(blank_recipient.flag_send)
 
 
 del ModuleTestCase
