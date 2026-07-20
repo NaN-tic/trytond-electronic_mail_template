@@ -33,7 +33,7 @@ except ImportError:
     logger.error(
         'Unable to import jinja2. Install jinja2 package.')
 
-from trytond.config import config
+import trytond.config as config
 from trytond.model import ModelView, ModelSQL, fields
 from trytond.pyson import Eval
 from trytond.pool import Pool
