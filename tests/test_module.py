@@ -91,6 +91,54 @@ class ElectronicMailTemplateTestCase(CompanyTestMixin, ModuleTestCase):
         self.assertNotIn(r'\_', markdown)
 
     @with_transaction()
+    def test_html_to_markdown_email_layout(self):
+        Template = Pool().get('electronic.mail.template')
+        value = dedent("""\
+            <table class="body"><tr><td>
+              <table class="columns"><tr><td>
+                <h1>Hello, ${record.party.name}</h1>
+                <p>Please find the invoice attached.</p>
+                <p>Thank you.</p>
+                <a href="${record.shop.website}">
+                  <img src="https://example.com/${record.shop.id}.jpg"
+                    alt="${record.shop.name}"></a>
+                <p><a href="mailto:${record.shop.email}">${record.shop.email}</a></p>
+              </td><td class="expander"></td></tr></table>
+              <table><tr><th>Product</th><th>Amount</th></tr>
+                <tr><td>T-shirt</td><td>10</td></tr></table>
+            </td></tr></table>
+            """)
+
+        result = Template._html_to_markdown(value)
+
+        self.assertIn('# Hello, ${record.party.name}', result)
+        self.assertIn(
+            'Please find the invoice attached.\n\nThank you.', result)
+        self.assertIn(
+            '[![${record.shop.name}](https://example.com/${record.shop.id}.jpg)]'
+            '(${record.shop.website})', result)
+        self.assertIn(
+            '[${record.shop.email}](mailto:${record.shop.email})', result)
+        self.assertIn('| Product | Amount |', result)
+        self.assertIn('| T-shirt | 10 |', result)
+        self.assertNotIn('|  |', result)
+
+    @with_transaction()
+    def test_html_to_markdown_protects_expressions(self):
+        Template = Pool().get('electronic.mail.template')
+        expression = "${record.amount if record.amount < 10 else ''}"
+        value = ('<p>' + expression + '</p>'
+            '<a href="{{ record.shop_url }}">Website</a>'
+            '<p>{% if record.invoice_date %}Invoice{% endif %}</p>')
+
+        result = Template._html_to_markdown(value)
+
+        self.assertIn(expression, result)
+        self.assertIn('[Website]({{ record.shop_url }})', result)
+        self.assertIn('{% if record.invoice_date %}', result)
+        self.assertIn('{% endif %}', result)
+
+    @with_transaction()
     def test_unescape_template_expressions_keeps_normal_markdown_escaping(self):
         Template = Pool().get('electronic.mail.template')
         value = (
