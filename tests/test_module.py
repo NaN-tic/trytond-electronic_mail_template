@@ -74,6 +74,48 @@ class ElectronicMailTemplateTestCase(CompanyTestMixin, ModuleTestCase):
         self.assertIn('* three', plain)
 
     @with_transaction()
+    def test_markdown_to_plain_html_layout(self):
+        Template = Pool().get('electronic.mail.template')
+        value = dedent("""\
+            <!DOCTYPE html><html><head><style>
+              .body { width: 100%; }
+            </style></head><body>
+              <table class="body"><tr><td>
+                <table class="columns"><tr><td>
+                  <h1>Hello, ${record.party.name}</h1>
+                  <p>Please find the invoice attached.</p>
+                  <p>Thank you.</p>
+                  <p><a href="${record.shop.website}">Website</a></p>
+                  <p><a href="mailto:${record.shop.email}">Email</a></p>
+                </td><td class="expander"></td></tr></table>
+              </td></tr></table>
+            </body></html>
+            """)
+
+        plain = Template._markdown_to_plain(value)
+
+        self.assertIn('Hello, ${record.party.name}', plain)
+        self.assertIn(
+            'Please find the invoice attached.\n\nThank you.', plain)
+        self.assertIn('[Website](${record.shop.website})', plain)
+        self.assertIn('[Email](mailto:${record.shop.email})', plain)
+        self.assertNotIn('|', plain)
+        self.assertNotIn('---', plain)
+        self.assertNotIn('width', plain)
+        self.assertNotIn('<table', plain)
+
+    @with_transaction()
+    def test_markdown_to_plain_preserves_expressions(self):
+        Template = Pool().get('electronic.mail.template')
+        expression = "${record.amount if record.amount < 10 else ''}"
+        for value in [expression, '<p>' + expression + '</p>',
+                '{{ record.invoice_date }}']:
+            with self.subTest(value=value):
+                self.assertEqual(
+                    Template._markdown_to_plain(value),
+                    value.removeprefix('<p>').removesuffix('</p>'))
+
+    @with_transaction()
     def test_html_to_markdown_unescapes_template_expressions(self):
         Template = Pool().get('electronic.mail.template')
         value = dedent("""\
