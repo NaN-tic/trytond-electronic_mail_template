@@ -313,6 +313,30 @@ class Template(ModelSQL, ModelView):
                 token = '%sMAIL%dX' % (prefix, len(email_links))
                 email_links[token] = link['href']
                 link['href'] = token
+        Template._flatten_layout_tables(soup)
+        value = str(soup)
+        converter = MarkItDown()
+        try:
+            with tempfile.NamedTemporaryFile(
+                    mode='w', suffix='.html', encoding='utf-8') as f:
+                f.write(value)
+                f.flush()
+                result = converter.convert(f.name)
+                text = result.text_content.replace('\x00', '').strip()
+                for token, href in email_links.items():
+                    text = text.replace(token, href)
+                for token, expression in expressions.items():
+                    text = text.replace(token, expression)
+                return Template._unescape_template_expressions(text)
+        except (FileConversionException, UnsupportedFormatException) as exc:
+            logger.error(
+                'MarkItDown conversion error while processing HTML content: %s',
+                exc, exc_info=True)
+        return ''
+
+    @staticmethod
+    def _flatten_layout_tables(soup):
+        """Replace email layout tables with blocks, keeping data tables."""
         layout_classes = {'body', 'container', 'row', 'columns', 'column'}
         # Classify before changing the tree, and only flatten elements belonging
         # to that table so a nested data table keeps its structure.
@@ -333,25 +357,6 @@ class Template(ModelSQL, ModelView):
                 if element.find_parent('table') is table:
                     element.name = 'div'
             table.name = 'div'
-        value = str(soup)
-        converter = MarkItDown()
-        try:
-            with tempfile.NamedTemporaryFile(
-                    mode='w', suffix='.html', encoding='utf-8') as f:
-                f.write(value)
-                f.flush()
-                result = converter.convert(f.name)
-                text = result.text_content.replace('\x00', '').strip()
-                for token, href in email_links.items():
-                    text = text.replace(token, href)
-                for token, expression in expressions.items():
-                    text = text.replace(token, expression)
-                return Template._unescape_template_expressions(text)
-        except (FileConversionException, UnsupportedFormatException) as exc:
-            logger.error(
-                'MarkItDown conversion error while processing HTML content: %s',
-                exc, exc_info=True)
-        return ''
 
     @staticmethod
     def _unescape_template_expressions(value):
@@ -374,10 +379,25 @@ class Template(ModelSQL, ModelView):
     def _markdown_to_plain(cls, value):
         if not value:
             return ''
+        # Keep expressions intact through both Markdown and HTML parsing.
+        expressions = {}
+        prefix = 'TEMPLATE' + uuid4().hex
+
+        def protect(match):
+            token = '%sX%dX' % (prefix, len(expressions))
+            expressions[token] = match.group(0)
+            return token
+
+        value = _TEMPLATE_EXPRESSION_PATTERN.sub(protect, value)
         html = cls._markdown_to_html(value)
         if not html:
             return ''
-        return html2text(html, bodywidth=0).strip()
+        soup = BeautifulSoup(html, 'html.parser')
+        cls._flatten_layout_tables(soup)
+        plain = html2text(str(soup), bodywidth=0).strip()
+        for token, expression in expressions.items():
+            plain = plain.replace(token, expression)
+        return plain
 
     @classmethod
     def render(cls, template, record, values, render_report=True,
