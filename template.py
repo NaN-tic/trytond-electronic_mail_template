@@ -5,7 +5,9 @@ import logging
 import mimetypes
 import re
 import tempfile
+from uuid import uuid4
 import markdown
+from bs4 import BeautifulSoup
 from email import encoders, charset
 from email.header import Header
 from email.mime.multipart import MIMEMultipart
@@ -297,6 +299,46 @@ class Template(ModelSQL, ModelView):
     def _html_to_markdown(value):
         if not value:
             return ''
+        # Protect template syntax from HTML parsing, Markdown escaping and URL
+        # quoting. Use a separate token for each occurrence, including links.
+        expressions = {}
+        prefix = 'TEMPLATE' + uuid4().hex
+
+        def protect(match):
+            token = '%sX%dX' % (prefix, len(expressions))
+            expressions[token] = match.group(0)
+            return token
+
+        value = _TEMPLATE_EXPRESSION_PATTERN.sub(protect, value)
+        soup = BeautifulSoup(value, 'html.parser')
+        # MarkItDown discards mailto links; preserve these email destinations.
+        email_links = {}
+        for link in soup.find_all('a', href=True):
+            if link['href'].lower().startswith('mailto:'):
+                token = '%sMAIL%dX' % (prefix, len(email_links))
+                email_links[token] = link['href']
+                link['href'] = token
+        layout_classes = {'body', 'container', 'row', 'columns', 'column'}
+        # Classify before changing the tree, and only flatten elements belonging
+        # to that table so a nested data table keeps its structure.
+        layout_tables = []
+        for table in soup.find_all('table'):
+            cells = [cell for cell in table.find_all(['td', 'th'])
+                if cell.find_parent('table') is table]
+            if (table.get('role') in {'presentation', 'none'}
+                    or (not any(cell.name == 'th' for cell in cells)
+                        and (table.find('table') is not None
+                            or layout_classes.intersection(
+                                table.get('class', []))
+                            or len(cells) == 1))):
+                layout_tables.append(table)
+        for table in layout_tables:
+            for element in table.find_all(
+                    ['thead', 'tbody', 'tfoot', 'tr', 'td', 'th']):
+                if element.find_parent('table') is table:
+                    element.name = 'div'
+            table.name = 'div'
+        value = str(soup)
         converter = MarkItDown()
         try:
             with tempfile.NamedTemporaryFile(
@@ -305,6 +347,10 @@ class Template(ModelSQL, ModelView):
                 f.flush()
                 result = converter.convert(f.name)
                 text = result.text_content.replace('\x00', '').strip()
+                for token, href in email_links.items():
+                    text = text.replace(token, href)
+                for token, expression in expressions.items():
+                    text = text.replace(token, expression)
                 return Template._unescape_template_expressions(text)
         except (FileConversionException, UnsupportedFormatException) as exc:
             logger.error(
