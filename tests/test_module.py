@@ -3,6 +3,7 @@
 # this repository contains the full copyright notices and license terms.
 
 from textwrap import dedent
+from types import SimpleNamespace
 
 from sql import Column
 from trytond.modules.company.tests import CompanyTestMixin
@@ -14,6 +15,59 @@ from trytond.transaction import Transaction
 class ElectronicMailTemplateTestCase(CompanyTestMixin, ModuleTestCase):
     'Test ElectronicMailTemplate module'
     module = 'electronic_mail_template'
+
+    @with_transaction()
+    def test_eval_markdown_genshi_headings(self):
+        Template = Pool().get('electronic.mail.template')
+        template = Template(engine='genshi')
+        record = SimpleNamespace(name='Customer')
+        for level in range(1, 7):
+            for indent in ('', '   '):
+                with self.subTest(level=level, indent=indent):
+                    prefix = indent + '#' * level
+                    value = prefix + ' Hello, ${record.name}'
+                    expected = prefix + ' Hello, Customer'
+                    rendered = template.eval_markdown(value, record)
+                    self.assertEqual(rendered, expected)
+                    # The wizard renders once on opening and again on sending.
+                    self.assertEqual(
+                        template.eval_markdown(rendered, record), expected)
+                    if not indent:
+                        self.assertIn(
+                            '<h%d>Hello, Customer</h%d>' % (level, level),
+                            Template._markdown_to_html(rendered))
+
+    @with_transaction()
+    def test_eval_markdown_genshi_directives(self):
+        Template = Pool().get('electronic.mail.template')
+        template = Template(engine='genshi')
+        record = SimpleNamespace(names=['Customer', 'Team'])
+        value = dedent('''\
+            #if record.names
+            #for name in record.names
+            ##### Hello, ${name}
+            #end
+            #end
+            ''')
+        self.assertEqual(template.eval_markdown(value, record),
+            '##### Hello, Customer\n##### Hello, Team\n')
+        self.assertEqual(template.eval_markdown(
+                r'\##### Regards:', record), '##### Regards:')
+        self.assertEqual(template.eval_markdown(None, record), '')
+        self.assertEqual(template.eval_markdown('', record), '')
+
+    @with_transaction()
+    def test_eval_markdown_other_engines(self):
+        Template = Pool().get('electronic.mail.template')
+        record = SimpleNamespace(name='Customer')
+        template = Template(engine='jinja2')
+        self.assertEqual(template.eval_markdown(
+                '##### Hello, {{ record.name }}', record),
+            '##### Hello, Customer')
+        template.engine = 'python'
+        self.assertEqual(template.eval_markdown(
+                "'##### Hello, ' + record.name", record),
+            '##### Hello, Customer')
 
     @with_transaction()
     def test_markdown_to_html_extensions(self):
