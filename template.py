@@ -222,6 +222,17 @@ class Template(ModelSQL, ModelView):
         engine_method = getattr(self, '_engine_' + self.engine)
         return engine_method(expression, record)
 
+    def eval_markdown(self, expression, record):
+        """Evaluate Markdown without treating headings as Genshi directives."""
+        if self.engine == 'genshi' and expression:
+            # Emit heading markers through interpolation, including in loops.
+            # Keep actual directives and already escaped headings unchanged.
+            expression = re.sub(
+                r'^( {0,3})(#{1,6})(?=[ \t]|\r?$)',
+                lambda match: match[1] + "${'#' * %d}" % len(match[2]),
+                expression, flags=re.MULTILINE)
+        return self.eval(expression, record)
+
     @staticmethod
     def template_context(record):
         """Generate the tempalte context
@@ -451,7 +462,7 @@ class Template(ModelSQL, ModelView):
                 record), 'utf-8').encode()
 
         # HTML & Text Alternate parts
-        markdown_text = template.eval(values['markdown'], record)
+        markdown_text = template.eval_markdown(values['markdown'], record)
         header = """
             <html>
             <head><head>
