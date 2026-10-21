@@ -1,6 +1,8 @@
 # This file is part electronic_mail_template module for Tryton.
 # The COPYRIGHT file at the top level of this repository contains
 # the full copyright notices and license terms.
+import base64
+import binascii
 import logging
 import mimetypes
 import re
@@ -409,11 +411,46 @@ class Template(ModelSQL, ModelView):
         if not html:
             return ''
         soup = BeautifulSoup(html, 'html.parser')
+        for image in soup.find_all('img'):
+            if image.get('src', '').lower().startswith(('data:', 'cid:')):
+                image.replace_with(image.get('alt', ''))
         cls._flatten_layout_tables(soup)
         plain = html2text(str(soup), bodywidth=0).strip()
         for token, expression in expressions.items():
             plain = plain.replace(token, expression)
         return plain
+
+    @classmethod
+    def _extract_inline_images(cls, html):
+        """Move embedded image data into related MIME parts."""
+        soup = BeautifulSoup(html, 'html.parser')
+        images = {}
+        for image in soup.find_all('img'):
+            source = image.get('src', '')
+            match = re.fullmatch(
+                r'data:(image/[a-z0-9.+-]+);base64,(.*)', source,
+                flags=re.IGNORECASE | re.DOTALL)
+            if not match:
+                continue
+            if source not in images:
+                try:
+                    data = base64.b64decode(
+                        re.sub(r'\s+', '', match.group(2)), validate=True)
+                except (ValueError, binascii.Error):
+                    continue
+                if not data:
+                    continue
+                maintype, subtype = match.group(1).lower().split('/', 1)
+                part = MIMEBase(maintype, subtype, policy=cls._get_policy())
+                part.set_payload(data)
+                encoders.encode_base64(part)
+                part['Content-ID'] = make_msgid()
+                part.add_header('Content-Disposition', 'inline')
+                images[source] = part
+            image['src'] = 'cid:' + images[source]['Content-ID'][1:-1]
+        if not images:
+            return html, []
+        return str(soup), list(images.values())
 
     @classmethod
     def render(cls, template, record, values, render_report=True,
@@ -465,7 +502,7 @@ class Template(ModelSQL, ModelView):
         markdown_text = template.eval_markdown(values['markdown'], record)
         header = """
             <html>
-            <head><head>
+            <head></head>
             <body>
             """
         footer = """
@@ -489,6 +526,7 @@ class Template(ModelSQL, ModelView):
 
         html_body = cls._markdown_to_html(markdown_text)
         plain = cls._markdown_to_plain(markdown_text)
+        html_body, inline_images = cls._extract_inline_images(html_body)
         html = ''
         if html_body:
             html = "%s%s%s" % (header, html_body, footer)
@@ -504,12 +542,19 @@ class Template(ModelSQL, ModelView):
                 message.attach(MIMEText(plain, 'plain', _charset='utf-8',
                         policy=cls._get_policy()))
         if html:
+            html_part = MIMEText(html, 'html', _charset='utf-8',
+                policy=cls._get_policy())
+            if inline_images:
+                related = MIMEMultipart('related', type='text/html',
+                    policy=cls._get_policy())
+                related.attach(html_part)
+                for image in inline_images:
+                    related.attach(image)
+                html_part = related
             if body:
-                body.attach(MIMEText(html, 'html', _charset='utf-8',
-                        policy=cls._get_policy()))
+                body.attach(html_part)
             else:
-                message.attach(MIMEText(html, 'html', _charset='utf-8',
-                        policy=cls._get_policy()))
+                message.attach(html_part)
         if body:
             message.attach(body)
 
