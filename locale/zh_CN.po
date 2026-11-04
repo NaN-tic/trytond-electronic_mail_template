@@ -1,0 +1,204 @@
+#
+msgid ""
+msgstr ""
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgctxt "field:electronic.mail,flag_send:"
+msgid "Sent"
+msgstr "已发送"
+
+msgctxt "field:electronic.mail,template:"
+msgid "Template"
+msgstr "模板"
+
+msgctxt "field:electronic.mail.template,bcc:"
+msgid "BCC"
+msgstr "密送"
+
+msgctxt "field:electronic.mail.template,cc:"
+msgid "CC"
+msgstr "抄送"
+
+msgctxt "field:electronic.mail.template,draft_mailbox:"
+msgid "Draft Mailbox"
+msgstr "草稿邮箱"
+
+msgctxt "field:electronic.mail.template,engine:"
+msgid "Engine"
+msgstr "引擎"
+
+msgctxt "field:electronic.mail.template,from_:"
+msgid "From"
+msgstr "从"
+
+msgctxt "field:electronic.mail.template,markdown:"
+msgid "Markdown Body"
+msgstr "Markdown 正文"
+
+msgctxt "field:electronic.mail.template,in_reply_to:"
+msgid "In Reply To"
+msgstr "回复关联"
+
+msgctxt "field:electronic.mail.template,references:"
+msgid "References"
+msgstr "引用"
+
+msgctxt "field:electronic.mail.template,language:"
+msgid "Language"
+msgstr "语言"
+
+msgctxt "field:electronic.mail.template,mailbox:"
+msgid "Mailbox"
+msgstr "邮箱"
+
+msgctxt "field:electronic.mail.template,message_id:"
+msgid "Message ID"
+msgstr "邮件 ID"
+
+msgctxt "field:electronic.mail.template,model:"
+msgid "Model"
+msgstr "模型"
+
+msgctxt "field:electronic.mail.template,name:"
+msgid "Name"
+msgstr "名称"
+
+msgctxt "field:electronic.mail.template,reports:"
+msgid "Reports"
+msgstr "报告"
+
+msgctxt "field:electronic.mail.template,sender:"
+msgid "Sender"
+msgstr "发件人"
+
+msgctxt "field:electronic.mail.template,signature:"
+msgid "Use Signature"
+msgstr "使用签名"
+
+msgctxt "field:electronic.mail.template,smtp_server:"
+msgid "SMTP Server"
+msgstr "SMTP 服务器"
+
+msgctxt "field:electronic.mail.template,subject:"
+msgid "Subject"
+msgstr "主题"
+
+msgctxt "field:electronic.mail.template,to:"
+msgid "To"
+msgstr "到"
+
+msgctxt "field:electronic.mail.template,triggers:"
+msgid "Triggers"
+msgstr "触发器"
+
+msgctxt "field:electronic.mail.template.ir.action.report,report:"
+msgid "Report"
+msgstr "报告"
+
+msgctxt "field:electronic.mail.template.ir.action.report,template:"
+msgid "Template"
+msgstr "模板"
+
+msgctxt "field:ir.action.report,file_name:"
+msgid "File Name Pattern"
+msgstr "文件名模式"
+
+msgctxt "field:ir.trigger,email_template:"
+msgid "Template"
+msgstr "模板"
+
+msgctxt "help:electronic.mail.template,language:"
+msgid "Expression to find the ISO langauge code"
+msgstr "用于查找 ISO 语言代码的表达式"
+
+msgctxt "help:electronic.mail.template,message_id:"
+msgid "Unique Message Identifier"
+msgstr "唯一邮件标识符"
+
+msgctxt "help:electronic.mail.template,signature:"
+msgid "The signature from the User details will be appened to the mail."
+msgstr "用户详细信息中的签名将附加到邮件末尾。"
+
+msgctxt "help:ir.action.report,file_name:"
+msgid ""
+"File name e-mail attachment without extension. with a syntax according to "
+"the engine that will be used in the template. eg. sale_${record.reference}"
+msgstr "不带扩展名的邮件附件文件名。语法取决于模板使用的引擎，例如 sale_${record.reference}"
+
+msgctxt "model:electronic.mail.template,name:"
+msgid "Email Template"
+msgstr "电子邮件模板"
+
+msgctxt "model:electronic.mail.template.ir.action.report,name:"
+msgid "Template - Report Action"
+msgstr "模板 - 报表操作"
+
+msgctxt "model:ir.action,name:act_template_form"
+msgid "Templates"
+msgstr "模板"
+
+#, python-format
+msgctxt "model:ir.message,text:generate_template_exception"
+msgid "An Exception Ocurred: %(error)s"
+msgstr "发生异常：%(error)s"
+
+#, python-format
+msgctxt "model:ir.message,text:msg_missing_mail_file"
+msgid "Could not send e-mail \"%(email)s\" due to missing Mail File"
+msgstr "无法发送电子邮件“%(email)s”，因为缺少邮件文件"
+
+msgctxt "model:ir.message,text:msg_smtp_server_default"
+msgid "There is no default SMTP server"
+msgstr "没有默认 SMTP 服务器"
+
+msgctxt "model:ir.message,text:recipients_error"
+msgid "Not valid recipients emails. Check emails in To, Cc or Bcc"
+msgstr "收件人邮箱无效。请检查收件人、抄送或密送地址"
+
+msgctxt "model:ir.model.button,string:electronic_mail_send_mail_button"
+msgid "Send Email"
+msgstr "发送电子邮件"
+
+msgctxt "model:ir.rule.group,name:rule_group_read_template"
+msgid "Read Email Template"
+msgstr "读取邮件模板"
+
+msgctxt "model:ir.ui.menu,name:menu_email_template"
+msgid "Templates"
+msgstr "模板"
+
+msgctxt "selection:ir.trigger,action:"
+msgid "Email Template"
+msgstr "电子邮件模板"
+
+msgctxt "view:electronic.mail.template:"
+msgid "Advanced"
+msgstr "高级"
+
+msgctxt "view:electronic.mail.template:"
+msgid "General"
+msgstr "普通"
+
+msgctxt "view:electronic.mail.template:"
+msgid "Reports"
+msgstr "报告"
+
+msgctxt "view:electronic.mail:"
+msgid "Send Email"
+msgstr "发送电子邮件"
+
+msgctxt "view:electronic.mail:"
+msgid "Email File"
+msgstr "邮件文件"
+
+msgctxt "view:electronic.mail:"
+msgid "HTML"
+msgstr "HTML"
+
+msgctxt "view:electronic.mail:"
+msgid "Plain Text"
+msgstr "纯文本"
