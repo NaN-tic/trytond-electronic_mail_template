@@ -8,6 +8,7 @@ import mimetypes
 import re
 import tempfile
 from uuid import uuid4
+from urllib.parse import unquote_to_bytes
 import markdown
 from bs4 import BeautifulSoup
 from email import encoders, charset
@@ -423,31 +424,38 @@ class Template(ModelSQL, ModelView):
     @classmethod
     def _extract_inline_images(cls, html):
         """Move embedded image data into related MIME parts."""
+        if not re.search(r'data:image/', html, re.IGNORECASE):
+            return html, []
         soup = BeautifulSoup(html, 'html.parser')
         images = {}
         for image in soup.find_all('img'):
             source = image.get('src', '')
             match = re.fullmatch(
-                r'data:(image/[a-z0-9.+-]+);base64,(.*)', source,
+                r'data:(image/[a-z0-9.+-]+)(?:;[^,;]*)*;base64,(.*)',
+                source.strip(),
                 flags=re.IGNORECASE | re.DOTALL)
             if not match:
                 continue
-            if source not in images:
-                try:
-                    data = base64.b64decode(
-                        re.sub(r'\s+', '', match.group(2)), validate=True)
-                except (ValueError, binascii.Error):
-                    continue
-                if not data:
-                    continue
-                maintype, subtype = match.group(1).lower().split('/', 1)
+            content_type = match.group(1).lower()
+            try:
+                payload = re.sub(rb'\s+', b'',
+                    unquote_to_bytes(match.group(2)))
+                data = base64.b64decode(payload, validate=True)
+            except (ValueError, binascii.Error):
+                logger.warning('Unable to decode embedded email image')
+                continue
+            if not data:
+                continue
+            key = (content_type, data)
+            if key not in images:
+                maintype, subtype = content_type.split('/', 1)
                 part = MIMEBase(maintype, subtype, policy=cls._get_policy())
                 part.set_payload(data)
                 encoders.encode_base64(part)
                 part['Content-ID'] = make_msgid()
                 part.add_header('Content-Disposition', 'inline')
-                images[source] = part
-            image['src'] = 'cid:' + images[source]['Content-ID'][1:-1]
+                images[key] = part
+            image['src'] = 'cid:' + images[key]['Content-ID'][1:-1]
         if not images:
             return html, []
         return str(soup), list(images.values())
