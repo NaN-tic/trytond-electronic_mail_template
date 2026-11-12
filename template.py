@@ -1,11 +1,14 @@
 # This file is part electronic_mail_template module for Tryton.
 # The COPYRIGHT file at the top level of this repository contains
 # the full copyright notices and license terms.
+import base64
+import binascii
 import logging
 import mimetypes
 import re
 import tempfile
 from uuid import uuid4
+from urllib.parse import unquote_to_bytes
 import markdown
 from bs4 import BeautifulSoup
 from email import encoders, charset
@@ -411,6 +414,52 @@ class Template(ModelSQL, ModelView):
         return plain
 
     @classmethod
+    def _html_to_mime(cls, html):
+        """Build the HTML MIME part with embedded data images linked by CID."""
+        images = {}
+        if re.search(r'data:image/', html, re.IGNORECASE):
+            soup = BeautifulSoup(html, 'html.parser')
+            for element in soup.find_all('img', src=True):
+                match = re.fullmatch(
+                    r'data:(image/[a-z0-9.+-]+)(?:;[^,;]*)*;base64,(.*)',
+                    element['src'].strip(), re.IGNORECASE | re.DOTALL)
+                if not match:
+                    continue
+                content_type = match.group(1).lower()
+                try:
+                    payload = re.sub(rb'\s+', b'',
+                        unquote_to_bytes(match.group(2)))
+                    data = base64.b64decode(payload, validate=True)
+                except (ValueError, binascii.Error):
+                    logger.warning('Unable to decode embedded email image')
+                    continue
+                if not data:
+                    continue
+                key = (content_type, data)
+                if key not in images:
+                    cid = make_msgid()
+                    image = MIMEBase('image', content_type.split('/', 1)[1],
+                        policy=cls._get_policy())
+                    image.set_payload(data)
+                    encoders.encode_base64(image)
+                    image.add_header('Content-ID', cid)
+                    image.add_header('Content-Disposition', 'inline')
+                    images[key] = image
+                element['src'] = 'cid:%s' % images[key]['Content-ID'][1:-1]
+            if images:
+                html = str(soup)
+        part = MIMEText(html, 'html', _charset='utf-8',
+            policy=cls._get_policy())
+        if not images:
+            return part
+        related = MIMEMultipart('related', type='text/html',
+            policy=cls._get_policy())
+        related.attach(part)
+        for image in images.values():
+            related.attach(image)
+        return related
+
+    @classmethod
     def render(cls, template, record, values, render_report=True,
             extra_attachments=None):
         '''Renders the template and returns as email object
@@ -499,12 +548,11 @@ class Template(ModelSQL, ModelView):
                 message.attach(MIMEText(plain, 'plain', _charset='utf-8',
                         policy=cls._get_policy()))
         if html:
+            html_part = cls._html_to_mime(html)
             if body:
-                body.attach(MIMEText(html, 'html', _charset='utf-8',
-                        policy=cls._get_policy()))
+                body.attach(html_part)
             else:
-                message.attach(MIMEText(html, 'html', _charset='utf-8',
-                        policy=cls._get_policy()))
+                message.attach(html_part)
         if body:
             message.attach(body)
 
