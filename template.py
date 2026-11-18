@@ -39,7 +39,7 @@ except ImportError:
     logger.error(
         'Unable to import jinja2. Install jinja2 package.')
 
-import trytond.config as config
+from trytond.config import config
 from trytond.model import ModelView, ModelSQL, fields
 from trytond.pyson import Eval
 from trytond.pool import Pool
@@ -50,6 +50,8 @@ from trytond.modules.electronic_mail_template.tools import unaccent
 from trytond.report import Report
 from simpleeval import simple_eval
 
+
+# Kept for integrations importing the configured queue name.
 QUEUE_NAME = config.get('electronic_mail', 'queue_name', default='default')
 
 
@@ -668,12 +670,10 @@ class Template(ModelSQL, ModelView):
         :param records: List Object of the records
         """
         pool = Pool()
-        Configuration = pool.get('electronic.mail.configuration')
         ElectronicEmail = pool.get('electronic.mail')
         Template = pool.get('electronic.mail.template')
 
         template = cls(template_id)
-        config = Configuration(1)
 
         for record in records:
             # load data in language when send a record
@@ -700,10 +700,7 @@ class Template(ModelSQL, ModelView):
             electronic_mail.template = template
             electronic_mail.save()
 
-            with Transaction().set_context(
-                    queue_name=QUEUE_NAME,
-                    queue_scheduled_at=config.send_email_after):
-                ElectronicEmail.__queue__.send_mail([electronic_mail])
+            ElectronicEmail.send_mail([electronic_mail])
         return True
 
     @classmethod
@@ -743,6 +740,9 @@ class Template(ModelSQL, ModelView):
                 'Content-Disposition', 'attachment', filename=filename)
             attachments.append(attachment)
         return attachments
+
+# Kept for integrations importing the configured queue name.
+QUEUE_NAME = config.get('electronic_mail', 'queue_name', default='default')
 
 
 class TemplateReport(ModelSQL):

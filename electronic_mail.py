@@ -1,20 +1,8 @@
 # This file is part electronic_mail_template module for Tryton.
 # The COPYRIGHT file at the top level of this repository contains
 # the full copyright notices and license terms.
-import logging
-import trytond.config as config
-from trytond.model import ModelView, fields
-from trytond.pool import Pool, PoolMeta
-from trytond.pyson import Eval, Bool
-from trytond.i18n import gettext
-from trytond.exceptions import UserError
-from trytond.transaction import Transaction
-from trytond.modules.electronic_mail_template.tools import (
-    recipients_from_fields)
-
-PRODUCTION_ENV = config.getboolean('database', 'production', default=False)
-QUEUE_NAME = config.get('electronic_mail', 'queue_name', default='default')
-logger = logging.getLogger(__name__)
+from trytond.model import fields
+from trytond.pool import PoolMeta
 
 
 class ElectronicMail(metaclass=PoolMeta):
@@ -22,125 +10,12 @@ class ElectronicMail(metaclass=PoolMeta):
     template = fields.Many2One('electronic.mail.template', 'Template')
 
     @classmethod
-    def __setup__(cls):
-        super(ElectronicMail, cls).__setup__()
-        cls._buttons.update({
-                'send_mail': {
-                    'invisible': (
-                        (Bool(Eval('body') == '')) |
-                        Eval('flag_send')
-                        ),
-                    },
-                })
-
-    @classmethod
     def check_xml_record(cls, records, values):
         '''It should be possible to overwrite templates'''
         return True
 
     @classmethod
-    def _get_sender_and_recipients(cls, mail):
-        sender = cls.validate_emails(
-            (mail.from_ or '').strip(), raise_exception=False)
-        recipients = [r.strip() for r in recipients_from_fields(mail)
-            if r and r.strip()]
-        return sender, recipients
-
-    @classmethod
-    @ModelView.button
-    def send_mail(cls, mails):
-        pool = Pool()
-        Configuration = pool.get('electronic.mail.configuration')
-        SMTP = pool.get('smtp.server')
-
-        if not PRODUCTION_ENV:
-            return
-
-        config = Configuration(1)
-
-        smtp_servers = SMTP.search([
-                ('state', '=', 'done'),
-                ('default', '=', True),
-                ], limit=1)
-        if not smtp_servers:
-            raise UserError(gettext(
-                'electronic_mail_template.msg_smtp_server_default'))
-
-        to_send = []
-        for mail in mails:
-            cls.lock([mail])
-            # Given that the lock (which is a SELECT FOR UPDATE NOWAIT) guarantees that no concurrent
-            # process is updating it, we must read now the flag_send value, and not rely on the value that
-            # may be in the cache of the object before the lock, which could have an older value.
-            mail = cls(mail.id)
-            if mail.flag_send:
-                continue
-            if not mail.mail_file:
-                raise UserError(gettext(
-                        'electronic_mail_template.msg_smtp_server_default',
-                        email=mail.rec_name))
-
-            sender, recipients = cls._get_sender_and_recipients(mail)
-            # validate_emails raise UserError or return ''
-            if sender and cls.validate_emails(recipients):
-                to_send.append(mail)
-
-        for mail in to_send:
-            with Transaction().set_context(
-                    queue_name=QUEUE_NAME,
-                    queue_scheduled_at=config.send_email_after):
-                cls.__queue__._send_mail([mail])
-
-    @classmethod
-    def _send_mail(cls, mails):
-        pool = Pool()
-        Configuration = pool.get('electronic.mail.configuration')
-        SMTP = pool.get('smtp.server')
-
-        config = Configuration(1)
-        draft_mailbox = config.draft
-
-        smtp_servers = SMTP.search([
-                ('state', '=', 'done'),
-                ('default', '=', True),
-                ], limit=1)
-        smtp_server = smtp_servers[0] if smtp_servers else None
-
-        to_flag_send = []
-        to_draft = []
-        for mail in mails:
-            if not mail.mail_file:
-                continue
-
-            sender, recipients = cls._get_sender_and_recipients(mail)
-
-            mail_smtp_server = (mail.template.smtp_server if mail.template
-                else smtp_server)
-            mail_draft_mailbox = (mail.template.draft_mailbox if mail.template
-                else draft_mailbox)
-
-            if not mail_smtp_server or not mail_draft_mailbox:
-                if not mail_smtp_server:
-                    logger.warning(
-                        'Missing default SMTP server mail ID: %s' % mail.id)
-                if not mail_smtp_server:
-                    logger.warning(
-                        'Missing default Mailbox mail ID: %s' % mail.id)
-                continue
-
-            # Validate recipients to send or move email to draft mailbox
-            if (not sender
-                    or not cls.validate_emails(
-                        recipients, raise_exception=False)):
-                to_draft.extend(([mail], {'mailbox': mail_draft_mailbox}))
-                continue
-
-            mail_smtp_server.send_mail(sender, recipients, mail.mail_file)
-            if not mail.flag_send:
-                to_flag_send.append(mail)
-
-        if to_flag_send:
-            cls.write(to_flag_send, {'flag_send': True})
-
-        if to_draft:
-            cls.write(*to_draft)
+    def _get_delivery_settings(cls, mail):
+        if mail.template:
+            return mail.template.smtp_server, mail.template.draft_mailbox
+        return super()._get_delivery_settings(mail)
