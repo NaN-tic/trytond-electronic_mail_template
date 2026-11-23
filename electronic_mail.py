@@ -26,10 +26,10 @@ class ElectronicMail(metaclass=PoolMeta):
         super(ElectronicMail, cls).__setup__()
         cls._buttons.update({
                 'send_mail': {
-                    'invisible': (
-                        (Bool(Eval('body') == '')) |
-                        Eval('flag_send')
-                        ),
+                    'invisible': (Eval('flag_send', False)
+                        | ~(Bool(Eval('to')) | Bool(Eval('cc'))
+                            | Bool(Eval('bcc')))),
+                    'depends': ['flag_send', 'to', 'cc', 'bcc'],
                     },
                 })
 
