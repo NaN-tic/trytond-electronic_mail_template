@@ -3,6 +3,6 @@
 The COPYRIGHT file at the top level of this repository contains the full copyright notices and license terms. -->
 <data>
     <xpath expr="/tree/field[@name='flag_send']" position="after">
-        <button name="send_mail"/>
+        <button name="send_mail" tree_invisible="1"/>
     </xpath>
 </data>
