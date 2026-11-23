@@ -6,10 +6,12 @@ from textwrap import dedent
 from unittest.mock import patch
 from types import SimpleNamespace
 
+from lxml import etree
 from sql import Column
 from trytond.modules.company.tests.test_module import create_company, set_company
 from trytond.modules.company.tests import CompanyTestMixin
 from trytond.pool import Pool
+from trytond.pyson import PYSONDecoder
 from trytond.tests.test_tryton import ModuleTestCase, with_transaction
 from trytond.transaction import Transaction
 
@@ -17,6 +19,27 @@ from trytond.transaction import Transaction
 class ElectronicMailTemplateTestCase(CompanyTestMixin, ModuleTestCase):
     'Test ElectronicMailTemplate module'
     module = 'electronic_mail_template'
+
+    @with_transaction()
+    def test_send_mail_tree_action(self):
+        pool = Pool()
+        Mail = pool.get('electronic.mail')
+        ModelData = pool.get('ir.model.data')
+        view = Mail.fields_view_get(view_id=ModelData.get_id(
+                'electronic_mail', 'mail_view_tree'))
+        tree = etree.fromstring(view['arch'])
+        button, = tree.xpath(
+            '/tree/button[@name="send_mail"][@tree_invisible="1"]')
+        states = button.get('states')
+        self.assertTrue({'flag_send', 'to', 'cc', 'bcc'} <= view['fields'].keys())
+        pending = dict(flag_send=False, to='', cc='', bcc='', body='')
+        self.assertTrue(PYSONDecoder(pending).decode(states)['invisible'])
+        for field in ('to', 'cc', 'bcc'):
+            with self.subTest(field=field):
+                record = {**pending, field: 'recipient@example.com'}
+                self.assertFalse(PYSONDecoder(record).decode(states)['invisible'])
+                record['flag_send'] = True
+                self.assertTrue(PYSONDecoder(record).decode(states)['invisible'])
 
     @with_transaction()
     def test_eval_markdown_genshi_headings(self):
