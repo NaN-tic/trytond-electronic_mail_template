@@ -1,0 +1,207 @@
+#
+msgid ""
+msgstr ""
+"Language: km\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgctxt "field:electronic.mail,flag_send:"
+msgid "Sent"
+msgstr "បានផ្ញើ"
+
+msgctxt "field:electronic.mail,template:"
+msgid "Template"
+msgstr "គំរូ"
+
+msgctxt "field:electronic.mail.template,bcc:"
+msgid "BCC"
+msgstr "BCC"
+
+msgctxt "field:electronic.mail.template,cc:"
+msgid "CC"
+msgstr "CC"
+
+msgctxt "field:electronic.mail.template,draft_mailbox:"
+msgid "Draft Mailbox"
+msgstr "ប្រអប់សំបុត្រសេចក្តីព្រាង"
+
+msgctxt "field:electronic.mail.template,engine:"
+msgid "Engine"
+msgstr "ម៉ាស៊ីនបង្កើតគំរូ"
+
+msgctxt "field:electronic.mail.template,from_:"
+msgid "From"
+msgstr "ពី"
+
+msgctxt "field:electronic.mail.template,markdown:"
+msgid "Markdown Body"
+msgstr "ខ្លឹមសារ Markdown"
+
+msgctxt "field:electronic.mail.template,in_reply_to:"
+msgid "In Reply To"
+msgstr "ឆ្លើយតបនឹង"
+
+msgctxt "field:electronic.mail.template,references:"
+msgid "References"
+msgstr "ឯកសារយោង"
+
+msgctxt "field:electronic.mail.template,language:"
+msgid "Language"
+msgstr "ភាសា"
+
+msgctxt "field:electronic.mail.template,mailbox:"
+msgid "Mailbox"
+msgstr "ប្រអប់សំបុត្រ"
+
+msgctxt "field:electronic.mail.template,message_id:"
+msgid "Message ID"
+msgstr "លេខសម្គាល់សារ"
+
+msgctxt "field:electronic.mail.template,model:"
+msgid "Model"
+msgstr "ម៉ូដែល"
+
+msgctxt "field:electronic.mail.template,name:"
+msgid "Name"
+msgstr "ឈ្មោះ"
+
+msgctxt "field:electronic.mail.template,reports:"
+msgid "Reports"
+msgstr "របាយការណ៍"
+
+msgctxt "field:electronic.mail.template,sender:"
+msgid "Sender"
+msgstr "អ្នកផ្ញើ"
+
+msgctxt "field:electronic.mail.template,signature:"
+msgid "Use Signature"
+msgstr "ប្រើហត្ថលេខា"
+
+msgctxt "field:electronic.mail.template,smtp_server:"
+msgid "SMTP Server"
+msgstr "ម៉ាស៊ីនមេ SMTP"
+
+msgctxt "field:electronic.mail.template,subject:"
+msgid "Subject"
+msgstr "ប្រធានបទ"
+
+msgctxt "field:electronic.mail.template,to:"
+msgid "To"
+msgstr "ដល់"
+
+msgctxt "field:electronic.mail.template,triggers:"
+msgid "Triggers"
+msgstr "សកម្មភាពបង្ក"
+
+msgctxt "field:electronic.mail.template.ir.action.report,report:"
+msgid "Report"
+msgstr "របាយការណ៍"
+
+msgctxt "field:electronic.mail.template.ir.action.report,template:"
+msgid "Template"
+msgstr "គំរូ"
+
+msgctxt "field:ir.action.report,file_name:"
+msgid "File Name Pattern"
+msgstr "លំនាំឈ្មោះឯកសារ"
+
+msgctxt "field:ir.trigger,email_template:"
+msgid "Template"
+msgstr "គំរូ"
+
+msgctxt "help:electronic.mail.template,language:"
+msgid "Expression to find the ISO langauge code"
+msgstr "កន្សោមសម្រាប់រកលេខកូដភាសា ISO"
+
+msgctxt "help:electronic.mail.template,message_id:"
+msgid "Unique Message Identifier"
+msgstr "លេខសម្គាល់សារតែមួយគត់"
+
+msgctxt "help:electronic.mail.template,signature:"
+msgid "The signature from the User details will be appened to the mail."
+msgstr "ប្រព័ន្ធនឹងបន្ថែមហត្ថលេខាពីព័ត៌មានលម្អិតរបស់អ្នកប្រើនៅចុងអ៊ីមែល។"
+
+msgctxt "help:ir.action.report,file_name:"
+msgid ""
+"File name e-mail attachment without extension. with a syntax according to the"
+" engine that will be used in the template. eg. sale_${record.reference}"
+msgstr ""
+"ឈ្មោះឯកសារភ្ជាប់អ៊ីមែលដោយគ្មានកន្ទុយឯកសារ។ "
+"ប្រើវាក្យសម្ពន្ធតាមម៉ាស៊ីនបង្កើតគំរូដែលបានជ្រើស។ ឧទាហរណ៍៖ "
+"sale_${record.reference}"
+
+msgctxt "model:electronic.mail.template,name:"
+msgid "Email Template"
+msgstr "គំរូអ៊ីមែល"
+
+msgctxt "model:electronic.mail.template.ir.action.report,name:"
+msgid "Template - Report Action"
+msgstr "គំរូ - សកម្មភាពរបាយការណ៍"
+
+msgctxt "model:ir.action,name:act_template_form"
+msgid "Templates"
+msgstr "គំរូ"
+
+#, python-format
+msgctxt "model:ir.message,text:generate_template_exception"
+msgid "An Exception Ocurred: %(error)s"
+msgstr "មានកំហុស៖ %(error)s"
+
+#, python-format
+msgctxt "model:ir.message,text:msg_missing_mail_file"
+msgid "Could not send e-mail \"%(email)s\" due to missing Mail File"
+msgstr "មិនអាចផ្ញើអ៊ីមែល «%(email)s» បានទេ ព្រោះបាត់ឯកសារអ៊ីមែល។"
+
+msgctxt "model:ir.message,text:msg_smtp_server_default"
+msgid "There is no default SMTP server"
+msgstr "មិនមានម៉ាស៊ីនមេ SMTP លំនាំដើមទេ។"
+
+msgctxt "model:ir.message,text:recipients_error"
+msgid "Not valid recipients emails. Check emails in To, Cc or Bcc"
+msgstr "អាសយដ្ឋានអ៊ីមែលអ្នកទទួលមិនត្រឹមត្រូវ។ សូមពិនិត្យវាល To, Cc ឬ Bcc។"
+
+msgctxt "model:ir.model.button,string:electronic_mail_send_mail_button"
+msgid "Send Email"
+msgstr "ផ្ញើអ៊ីមែល"
+
+msgctxt "model:ir.rule.group,name:rule_group_read_template"
+msgid "Read Email Template"
+msgstr "អានគំរូអ៊ីមែល"
+
+msgctxt "model:ir.ui.menu,name:menu_email_template"
+msgid "Templates"
+msgstr "គំរូ"
+
+msgctxt "selection:ir.trigger,action:"
+msgid "Email Template"
+msgstr "គំរូអ៊ីមែល"
+
+msgctxt "view:electronic.mail.template:"
+msgid "Advanced"
+msgstr "កម្រិតខ្ពស់"
+
+msgctxt "view:electronic.mail.template:"
+msgid "General"
+msgstr "ទូទៅ"
+
+msgctxt "view:electronic.mail.template:"
+msgid "Reports"
+msgstr "របាយការណ៍"
+
+msgctxt "view:electronic.mail:"
+msgid "Send Email"
+msgstr "ផ្ញើអ៊ីមែល"
+
+msgctxt "view:electronic.mail:"
+msgid "Email File"
+msgstr "ឯកសារអ៊ីមែល"
+
+msgctxt "view:electronic.mail:"
+msgid "HTML"
+msgstr "HTML"
+
+msgctxt "view:electronic.mail:"
+msgid "Plain Text"
+msgstr "អត្ថបទធម្មតា"
